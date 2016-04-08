@@ -4,9 +4,12 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.angkorteam.mbaas.sdk.android.library.request.device.DeviceRegisterRequest;
+import com.angkorteam.mbaas.sdk.android.library.response.device.DeviceRegisterResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.monitor.MonitorTimeResponse;
 import com.angkorteam.mbaas.sdk.android.library.retrofit.NetworkInterceptor;
 import com.google.gson.Gson;
@@ -18,16 +21,13 @@ import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.GET;
 
 /**
  * Created by socheat on 4/6/16.
  */
-public class MBaaSAndroidSDK {
+public class MBaaSClient {
 
-    private final String clientId;
-
-    private final String clientSecret;
+    public static final String ACCESS_TOKEN = "accessToken";
 
     private final Context context;
 
@@ -37,18 +37,19 @@ public class MBaaSAndroidSDK {
 
     private final IService service;
 
-    public MBaaSAndroidSDK(Context context, String clientId, String clientSecret) {
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
+    private MBaaSApplication application;
+
+    public MBaaSClient(MBaaSApplication application, Context context) {
+        this.application = application;
         this.context = context;
-        this.preferences = context.getSharedPreferences(MBaaSAndroidSDK.class.getName(), Context.MODE_PRIVATE);
+        this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
 
         this.gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ").create();
         OkHttpClient httpClient = new OkHttpClient.Builder()
-                .addNetworkInterceptor(new NetworkInterceptor(this.preferences, System.getProperty("http.agent")))
+                .addNetworkInterceptor(new NetworkInterceptor(this.preferences, this.application.getMBaaSClientId(), this.application.getMBaaSClientSecret(), System.getProperty("http.agent")))
                 .build();
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://pkayjava.ddns.net:9080/mbaas-server/")
+                .baseUrl(this.application.getMBaaSAddress())
                 .addConverterFactory(GsonConverterFactory.create(this.gson))
                 .client(httpClient)
                 .callbackExecutor(Executors.newFixedThreadPool(5))
@@ -56,9 +57,12 @@ public class MBaaSAndroidSDK {
         this.service = retrofit.create(IService.class);
     }
 
-
     public Call<MonitorTimeResponse> monitorTime() {
         return this.service.monitorTime();
+    }
+
+    public Call<DeviceRegisterResponse> deviceRegister(DeviceRegisterRequest request) {
+        return this.service.deviceRegister(request);
     }
 
     public void login() {

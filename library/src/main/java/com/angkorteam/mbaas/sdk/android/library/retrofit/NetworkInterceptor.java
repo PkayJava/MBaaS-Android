@@ -2,6 +2,8 @@ package com.angkorteam.mbaas.sdk.android.library.retrofit;
 
 import android.content.SharedPreferences;
 
+import com.angkorteam.mbaas.sdk.android.library.MBaaSClient;
+
 import java.io.IOException;
 
 import okhttp3.Interceptor;
@@ -17,9 +19,15 @@ public class NetworkInterceptor implements Interceptor {
 
     private final SharedPreferences preferences;
 
-    public NetworkInterceptor(SharedPreferences preferences, String userAgent) {
+    private final String clientId;
+
+    private final String clientSecret;
+
+    public NetworkInterceptor(SharedPreferences preferences, String clientId, String clientSecret, String userAgent) {
         this.userAgent = userAgent;
         this.preferences = preferences;
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
     }
 
     @Override
@@ -28,11 +36,17 @@ public class NetworkInterceptor implements Interceptor {
 
         Request.Builder builder = originalRequest.newBuilder();
 
-        String accessToken = preferences.getString("accessToken", "");
-        if ("".equals(accessToken)) {
-            builder.header("Authorization", "Bearer Anonymous");
-        } else {
+        String accessToken = preferences.getString(MBaaSClient.ACCESS_TOKEN, "");
+        if (!"".equals(accessToken)) {
             builder.header("Authorization", "Bearer " + accessToken);
+        }
+
+        if (this.clientId != null && !"".equals(this.clientId)) {
+            builder.header("client_id", this.clientId);
+        }
+
+        if (this.clientSecret != null && !"".equals(this.clientSecret)) {
+            builder.header("client_secret", this.clientSecret);
         }
 
         builder.header("User-Agent", userAgent);
