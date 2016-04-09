@@ -61,7 +61,8 @@ public abstract class MBaaSRegistrationIntentService extends IntentService {
                 Call<DeviceRegisterResponse> responseCall = client.deviceRegister(request);
                 Response<DeviceRegisterResponse> response = responseCall.execute();
                 DeviceRegisterResponse responseBody = response.body();
-                if (responseBody.getHttpCode() != 200) {
+                if (response.code() != 200 || responseBody.getHttpCode() != 200) {
+                    sharedPreferences.edit().putString(MBaaSClient.ACCESS_TOKEN, "").apply();
                     throw new IOException(response.body().getResult());
                 }
                 sharedPreferences.edit().putString(MBaaSClient.ACCESS_TOKEN, responseBody.getData().getAccessToken()).apply();
@@ -70,6 +71,7 @@ public abstract class MBaaSRegistrationIntentService extends IntentService {
 
                 onRegistrationCompleted();
             } catch (Exception e) {
+                sharedPreferences.edit().putString(MBaaSClient.ACCESS_TOKEN, "").apply();
                 onRegistrationFailed(e.getMessage());
             }
         }

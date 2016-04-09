@@ -18,6 +18,7 @@ import com.google.gson.GsonBuilder;
 import java.util.concurrent.Executors;
 
 import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -55,6 +56,10 @@ public class MBaaSClient {
                 .callbackExecutor(Executors.newFixedThreadPool(5))
                 .build();
         this.service = retrofit.create(IService.class);
+    }
+
+    public Call<ResponseBody> deviceUnregister(String id) {
+        return this.service.deviceUnregister(id);
     }
 
     public Call<MonitorTimeResponse> monitorTime() {
