@@ -9,14 +9,17 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.angkorteam.mbaas.sdk.android.library.request.device.DeviceRegisterRequest;
+import com.angkorteam.mbaas.sdk.android.library.request.javascript.JavaScriptExecuteRequest;
 import com.angkorteam.mbaas.sdk.android.library.response.device.DeviceMetricsResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.device.DeviceRegisterResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.device.DeviceUnregisterResponse;
+import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.monitor.MonitorTimeResponse;
 import com.angkorteam.mbaas.sdk.android.library.retrofit.NetworkInterceptor;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.Map;
 import java.util.concurrent.Executors;
 
 import okhttp3.OkHttpClient;
@@ -24,6 +27,14 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Body;
+import retrofit2.http.FieldMap;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Path;
+import retrofit2.http.QueryMap;
 
 /**
  * Created by socheat on 4/6/16.
@@ -60,6 +71,10 @@ public class MBaaSClient {
         this.service = retrofit.create(IService.class);
     }
 
+    public Call<DeviceRegisterResponse> deviceRegister(DeviceRegisterRequest request) {
+        return this.service.deviceRegister(request);
+    }
+
     public Call<DeviceUnregisterResponse> deviceUnregister(String deviceToken) {
         return this.service.deviceUnregister(deviceToken);
     }
@@ -68,8 +83,32 @@ public class MBaaSClient {
         return this.service.sendMetrics(application.getMBaaSClientId(), messageId);
     }
 
-    public Call<DeviceRegisterResponse> deviceRegister(DeviceRegisterRequest request) {
-        return this.service.deviceRegister(request);
+    public Call<JavaScriptExecuteResponse> javascriptExecutePost(String script) {
+        return this.service.javascriptExecutePost(script);
+    }
+
+    public Call<JavaScriptExecuteResponse> javascriptExecutePost(String script, Map<String, Object> params) {
+        return this.service.javascriptExecutePost(script, params);
+    }
+
+    public Call<JavaScriptExecuteResponse> javascriptExecutePost(String script, JavaScriptExecuteRequest request) {
+        return this.service.javascriptExecutePost(script, request);
+    }
+
+    public Call<JavaScriptExecuteResponse> javascriptExecuteGet(String script) {
+        return this.service.javascriptExecuteGet(script);
+    }
+
+    public Call<JavaScriptExecuteResponse> javascriptExecuteGet(String script, Map<String, Object> params) {
+        return this.service.javascriptExecuteGet(script, params);
+    }
+
+    public Call<JavaScriptExecuteResponse> javascriptExecutePut(String script) {
+        return this.service.javascriptExecutePut(script);
+    }
+
+    public Call<JavaScriptExecuteResponse> javascriptExecutePut(String script, JavaScriptExecuteRequest request) {
+        return this.service.javascriptExecutePut(script, request);
     }
 
     public Call<MonitorTimeResponse> monitorTime() {

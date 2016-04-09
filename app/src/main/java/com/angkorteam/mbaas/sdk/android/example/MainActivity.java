@@ -7,10 +7,19 @@ import android.util.Log;
 import android.widget.TextView;
 
 import com.angkorteam.mbaas.sdk.android.example.gcm.RegistrationIntentService;
+import com.angkorteam.mbaas.sdk.android.library.MBaaSClient;
+import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.HashMap;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class MainActivity extends AppCompatActivity implements Callback<JavaScriptExecuteResponse> {
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     public static final String TAG = "MBaaS";
@@ -29,6 +38,23 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, RegistrationIntentService.class);
             startService(intent);
         }
+
+        MBaaSClient client = ((Application) getApplication()).getMBaaSClient();
+        Map<String, Object> params = new HashMap<>();
+        params.put("title", "hot");
+        Call<JavaScriptExecuteResponse> responseCall = client.javascriptExecuteGet("getnews", params);
+        responseCall.enqueue(this);
+    }
+
+    @Override
+    public void onResponse(Call<JavaScriptExecuteResponse> call, Response<JavaScriptExecuteResponse> response) {
+        JavaScriptExecuteResponse responseBody = response.body();
+        Log.i("MBaaS", responseBody.getMethod());
+    }
+
+    @Override
+    public void onFailure(Call<JavaScriptExecuteResponse> call, Throwable t) {
+
     }
 
     @Override
