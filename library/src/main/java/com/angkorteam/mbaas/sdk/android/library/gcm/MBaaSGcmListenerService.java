@@ -20,7 +20,6 @@ public abstract class MBaaSGcmListenerService extends com.google.android.gms.gcm
     // [START receive_message]
     @Override
     public void onMessageReceived(String from, Bundle data) {
-        String message = data.getString("message");
 
         if (from.startsWith("/topics/")) {
             // message received from some topic.
@@ -40,10 +39,15 @@ public abstract class MBaaSGcmListenerService extends com.google.android.gms.gcm
          * In some cases it may be useful to show a notification indicating to the user
          * that a message was received.
          */
-        onMessage(message);
+        String messageId = data.getString(PushMessage.PUSH_MESSAGE_ID);
+        String payload = data.getString(PushMessage.ALERT_KEY);
+        Integer badge = data.getInt(PushMessage.BADGE);
+        String sound = data.getString(PushMessage.SOUND);
+        String collapseKey = data.getString(PushMessage.COLLAPSE_KEY);
+        onMessage(messageId, payload, badge, sound, collapseKey);
         // [END_EXCLUDE]
     }
     // [END receive_message]
 
-    protected abstract void onMessage(String message);
+    protected abstract void onMessage(String messageId, String payload, Integer badge, String sound, String collapseKey);
 }

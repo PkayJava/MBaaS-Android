@@ -9,7 +9,9 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.angkorteam.mbaas.sdk.android.library.request.device.DeviceRegisterRequest;
+import com.angkorteam.mbaas.sdk.android.library.response.device.DeviceMetricsResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.device.DeviceRegisterResponse;
+import com.angkorteam.mbaas.sdk.android.library.response.device.DeviceUnregisterResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.monitor.MonitorTimeResponse;
 import com.angkorteam.mbaas.sdk.android.library.retrofit.NetworkInterceptor;
 import com.google.gson.Gson;
@@ -58,16 +60,20 @@ public class MBaaSClient {
         this.service = retrofit.create(IService.class);
     }
 
-    public Call<ResponseBody> deviceUnregister(String id) {
-        return this.service.deviceUnregister(id);
+    public Call<DeviceUnregisterResponse> deviceUnregister(String deviceToken) {
+        return this.service.deviceUnregister(deviceToken);
     }
 
-    public Call<MonitorTimeResponse> monitorTime() {
-        return this.service.monitorTime();
+    public Call<DeviceMetricsResponse> sendMetrics(String messageId) {
+        return this.service.sendMetrics(application.getMBaaSClientId(), messageId);
     }
 
     public Call<DeviceRegisterResponse> deviceRegister(DeviceRegisterRequest request) {
         return this.service.deviceRegister(request);
+    }
+
+    public Call<MonitorTimeResponse> monitorTime() {
+        return this.service.monitorTime();
     }
 
     public void login() {

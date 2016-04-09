@@ -19,10 +19,10 @@ public class GcmListenerService extends com.angkorteam.mbaas.sdk.android.library
     /**
      * Create and show a simple notification containing the received GCM message.
      *
-     * @param message GCM message received.
+     * @param payload GCM message received.
      */
     @Override
-    protected void onMessage(String message) {
+    protected void onMessage(String messageId, String payload, Integer badge, String sound, String collapseKey) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
@@ -32,7 +32,7 @@ public class GcmListenerService extends com.angkorteam.mbaas.sdk.android.library
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.common_ic_googleplayservices)
                 .setContentTitle("GCM Message")
-                .setContentText(message)
+                .setContentText(payload)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
                 .setContentIntent(pendingIntent);
