@@ -2,6 +2,10 @@ package com.angkorteam.mbaas.sdk.android.library.gcm;
 
 import android.os.Bundle;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by socheat on 4/8/16.
  */
@@ -44,10 +48,21 @@ public abstract class MBaaSGcmListenerService extends com.google.android.gms.gcm
         Integer badge = data.getInt(PushMessage.BADGE);
         String sound = data.getString(PushMessage.SOUND);
         String collapseKey = data.getString(PushMessage.COLLAPSE_KEY);
-        onMessage(messageId, payload, badge, sound, collapseKey);
+
+        Map<String, Object> userData = new HashMap<>();
+        for (String key : data.keySet()) {
+            userData.put(key, data.get(key));
+        }
+        userData.remove(PushMessage.COLLAPSE_KEY);
+        userData.remove(PushMessage.PUSH_MESSAGE_ID);
+        userData.remove(PushMessage.SOUND);
+        userData.remove(PushMessage.ALERT_KEY);
+        userData.remove(PushMessage.BADGE);
+
+        onMessage(messageId, payload, badge, sound, collapseKey, Collections.unmodifiableMap(userData));
         // [END_EXCLUDE]
     }
     // [END receive_message]
 
-    protected abstract void onMessage(String messageId, String payload, Integer badge, String sound, String collapseKey);
+    protected abstract void onMessage(String messageId, String alert, Integer badge, String sound, String collapseKey, Map<String, Object> userData);
 }

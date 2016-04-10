@@ -28,17 +28,20 @@ public class Application extends android.app.Application implements MBaaSApplica
 
     @Override
     public String getMBaaSClientId() {
-        return "58e9c7d4-f256-4cb6-be00-ec7d4a08caef";
+        return "8d3bdc45-a9e3-4fa4-a126-6d0a70532ca5";
+//        return "912a0778-7664-4761-ba0d-ab0de2436307";
     }
 
     @Override
     public String getMBaaSClientSecret() {
-        return "66f47af6-7149-4f91-9f06-a9aefe67cf23";
+        return "52a0c53a-d10e-41bd-8584-07c631127cb3";
+//        return "fd821e9b-86f3-4c23-8084-3a236c390113";
     }
 
     @Override
     public String getMBaaSAddress() {
         return "http://pkayjava.ddns.net:9080/mbaas-server/";
+//        return "http://192.168.1.114:7080/";
     }
 
     @Override

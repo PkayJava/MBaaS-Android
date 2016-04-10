@@ -13,6 +13,7 @@ import com.angkorteam.mbaas.sdk.android.example.MainActivity;
 import com.angkorteam.mbaas.sdk.android.example.R;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Created by socheat on 4/8/16.
@@ -22,10 +23,10 @@ public class GcmListenerService extends com.angkorteam.mbaas.sdk.android.library
     /**
      * Create and show a simple notification containing the received GCM message.
      *
-     * @param payload GCM message received.
+     * @param alert GCM message received.
      */
     @Override
-    protected void onMessage(String messageId, String payload, Integer badge, String sound, String collapseKey) {
+    protected void onMessage(String messageId, String alert, Integer badge, String sound, String collapseKey, Map<String, Object> userData) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
@@ -35,7 +36,7 @@ public class GcmListenerService extends com.angkorteam.mbaas.sdk.android.library
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.common_ic_googleplayservices)
                 .setContentTitle("GCM Message")
-                .setContentText(payload)
+                .setContentText(alert)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
                 .setContentIntent(pendingIntent);

@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import com.angkorteam.mbaas.sdk.android.example.gcm.RegistrationIntentService;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSClient;
+import com.angkorteam.mbaas.sdk.android.library.request.file.FileCreateRequest;
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
