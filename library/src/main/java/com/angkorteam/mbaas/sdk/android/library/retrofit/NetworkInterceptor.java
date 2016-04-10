@@ -39,14 +39,14 @@ public class NetworkInterceptor implements Interceptor {
         String accessToken = preferences.getString(MBaaSClient.ACCESS_TOKEN, "");
         if (!"".equals(accessToken)) {
             builder.header("Authorization", "Bearer " + accessToken);
+        } else {
+            if (this.clientSecret != null && !"".equals(this.clientSecret)) {
+                builder.header("client_secret", this.clientSecret);
+            }
         }
 
         if (this.clientId != null && !"".equals(this.clientId)) {
             builder.header("client_id", this.clientId);
-        }
-
-        if (this.clientSecret != null && !"".equals(this.clientSecret)) {
-            builder.header("client_secret", this.clientSecret);
         }
 
         builder.header("User-Agent", userAgent);
