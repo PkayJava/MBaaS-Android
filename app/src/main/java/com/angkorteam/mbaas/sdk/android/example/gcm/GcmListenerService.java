@@ -26,7 +26,7 @@ public class GcmListenerService extends com.angkorteam.mbaas.sdk.android.library
      * @param alert GCM message received.
      */
     @Override
-    protected void onMessage(String messageId, String alert, Integer badge, String sound, String collapseKey, Map<String, Object> userData) {
+    protected void onMessage(String messageId, String alert, String badge, String sound, String collapseKey, Map<String, Object> userData) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,

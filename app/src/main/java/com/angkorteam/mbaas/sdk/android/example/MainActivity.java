@@ -55,12 +55,13 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
             FileCreateRequest request = new FileCreateRequest();
             request.setContentType("text/plain");
             request.setContent("I Love You".getBytes());
-            Call<FileCreateResponse> responseCall = client.fileCreate("text", request);
+            Call<FileCreateResponse> responseCall = client.fileCreate("text.txt", request);
             responseCall.enqueue(new Callback<FileCreateResponse>() {
                 @Override
                 public void onResponse(Call<FileCreateResponse> call, Response<FileCreateResponse> response) {
                     Log.i("MBaaS", "A " + new Gson().toJson(response.body()));
                     Log.i("MBaaS", "B " + new Gson().toJson(response.message()));
+                    Log.i("MBaaS", "B " + new Gson().toJson(response.code()));
                 }
 
                 @Override

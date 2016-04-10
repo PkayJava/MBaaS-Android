@@ -20,4 +20,5 @@ public interface PushMessage {
     String SOUND = "sound";
 
     String COLLAPSE_KEY = "collapse_key";
+
 }

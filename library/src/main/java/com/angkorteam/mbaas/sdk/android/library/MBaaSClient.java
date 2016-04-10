@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
 
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -67,7 +68,11 @@ public class MBaaSClient {
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
 
         this.gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ").create();
+
+        HttpLoggingInterceptor logger = new HttpLoggingInterceptor();
+        logger.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient httpClient = new OkHttpClient.Builder()
+                .addInterceptor(logger)
                 .addNetworkInterceptor(new NetworkInterceptor(this.preferences, this.application.getMBaaSClientId(), this.application.getMBaaSClientSecret(), this.application.getMBaaSAppVersion(), SDK_VERSION, System.getProperty("http.agent")))
                 .build();
         Retrofit retrofit = new Retrofit.Builder()

@@ -45,7 +45,7 @@ public abstract class MBaaSGcmListenerService extends com.google.android.gms.gcm
          */
         String messageId = data.getString(PushMessage.PUSH_MESSAGE_ID);
         String payload = data.getString(PushMessage.ALERT_KEY);
-        Integer badge = data.getInt(PushMessage.BADGE);
+        String badge = data.getString(PushMessage.BADGE);
         String sound = data.getString(PushMessage.SOUND);
         String collapseKey = data.getString(PushMessage.COLLAPSE_KEY);
 
@@ -64,5 +64,5 @@ public abstract class MBaaSGcmListenerService extends com.google.android.gms.gcm
     }
     // [END receive_message]
 
-    protected abstract void onMessage(String messageId, String alert, Integer badge, String sound, String collapseKey, Map<String, Object> userData);
+    protected abstract void onMessage(String messageId, String alert, String badge, String sound, String collapseKey, Map<String, Object> userData);
 }
