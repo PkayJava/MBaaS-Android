@@ -9,9 +9,11 @@ import android.widget.TextView;
 import com.angkorteam.mbaas.sdk.android.example.gcm.RegistrationIntentService;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSClient;
 import com.angkorteam.mbaas.sdk.android.library.request.file.FileCreateRequest;
+import com.angkorteam.mbaas.sdk.android.library.response.file.FileCreateResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.gson.Gson;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,10 +43,32 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
         }
 
         MBaaSClient client = ((Application) getApplication()).getMBaaSClient();
-        Map<String, Object> params = new HashMap<>();
-        params.put("title", "hot");
-        Call<JavaScriptExecuteResponse> responseCall = client.javascriptExecuteGet("getnews", params);
-        responseCall.enqueue(this);
+
+        {
+            Map<String, Object> params = new HashMap<>();
+            params.put("title", "hot");
+//            Call<JavaScriptExecuteResponse> responseCall = client.javascriptExecuteGet("getnews", params);
+//            responseCall.enqueue(this);
+        }
+
+        {
+            FileCreateRequest request = new FileCreateRequest();
+            request.setContentType("text/plain");
+            request.setContent("I Love You".getBytes());
+            Call<FileCreateResponse> responseCall = client.fileCreate("text", request);
+            responseCall.enqueue(new Callback<FileCreateResponse>() {
+                @Override
+                public void onResponse(Call<FileCreateResponse> call, Response<FileCreateResponse> response) {
+                    Log.i("MBaaS", "A " + new Gson().toJson(response.body()));
+                    Log.i("MBaaS", "B " + new Gson().toJson(response.message()));
+                }
+
+                @Override
+                public void onFailure(Call<FileCreateResponse> call, Throwable t) {
+                    Log.i("MBaaS", "C " + t.getMessage());
+                }
+            });
+        }
     }
 
     @Override

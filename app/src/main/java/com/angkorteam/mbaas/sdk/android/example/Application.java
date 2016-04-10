@@ -28,13 +28,13 @@ public class Application extends android.app.Application implements MBaaSApplica
 
     @Override
     public String getMBaaSClientId() {
-        return "8d3bdc45-a9e3-4fa4-a126-6d0a70532ca5";
+        return "9d1be831-d3f1-406a-ba17-14d4e7e0c7a6";
 //        return "912a0778-7664-4761-ba0d-ab0de2436307";
     }
 
     @Override
     public String getMBaaSClientSecret() {
-        return "52a0c53a-d10e-41bd-8584-07c631127cb3";
+        return "d1de4a0b-eaf5-405c-a9a5-e12dd94c0f1a";
 //        return "fd821e9b-86f3-4c23-8084-3a236c390113";
     }
 

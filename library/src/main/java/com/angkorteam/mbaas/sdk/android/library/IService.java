@@ -67,7 +67,7 @@ public interface IService {
     public Call<JavaScriptExecuteResponse> javascriptExecutePut(@Path("script") String script, @Body JavaScriptExecuteRequest request);
 
     @POST("api/file/create/{filename}")
-    public Call<FileCreateResponse> fileCreate(@Path("filename") String filename, @Body FileCreateRequest request);
+    public Call<FileCreateResponse> fileCreate(@Path(value = "filename", encoded = false) String filename, @Body FileCreateRequest request);
 
     @DELETE("api/file/delete/{fileId}")
     public Call<FileDeleteResponse> fileDelete(@Path("fileId") String fileId);

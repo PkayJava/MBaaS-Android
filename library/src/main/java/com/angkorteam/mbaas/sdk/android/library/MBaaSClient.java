@@ -128,7 +128,7 @@ public class MBaaSClient {
     }
 
     public Call<AssetCreateResponse> assetCreate(String filename, AssetCreateRequest request) {
-        return this.assetCreate(filename, request);
+        return this.service.assetCreate(filename, request);
     }
 
     public Call<AssetDeleteResponse> assetDelete(String assetId) {
