@@ -8,11 +8,17 @@ import android.preference.PreferenceManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.angkorteam.mbaas.sdk.android.library.request.asset.AssetCreateRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.device.DeviceRegisterRequest;
+import com.angkorteam.mbaas.sdk.android.library.request.file.FileCreateRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.javascript.JavaScriptExecuteRequest;
+import com.angkorteam.mbaas.sdk.android.library.response.asset.AssetCreateResponse;
+import com.angkorteam.mbaas.sdk.android.library.response.asset.AssetDeleteResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.device.DeviceMetricsResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.device.DeviceRegisterResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.device.DeviceUnregisterResponse;
+import com.angkorteam.mbaas.sdk.android.library.response.file.FileCreateResponse;
+import com.angkorteam.mbaas.sdk.android.library.response.file.FileDeleteResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.monitor.MonitorTimeResponse;
 import com.angkorteam.mbaas.sdk.android.library.retrofit.NetworkInterceptor;
@@ -41,6 +47,8 @@ import retrofit2.http.QueryMap;
  */
 public class MBaaSClient {
 
+    private static final String SDK_VERSION = "1.0.0";
+
     public static final String ACCESS_TOKEN = "accessToken";
 
     private final Context context;
@@ -60,7 +68,7 @@ public class MBaaSClient {
 
         this.gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ").create();
         OkHttpClient httpClient = new OkHttpClient.Builder()
-                .addNetworkInterceptor(new NetworkInterceptor(this.preferences, this.application.getMBaaSClientId(), this.application.getMBaaSClientSecret(), System.getProperty("http.agent")))
+                .addNetworkInterceptor(new NetworkInterceptor(this.preferences, this.application.getMBaaSClientId(), this.application.getMBaaSClientSecret(), this.application.getMBaaSAppVersion(), SDK_VERSION, System.getProperty("http.agent")))
                 .build();
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(this.application.getMBaaSAddress())
@@ -80,7 +88,7 @@ public class MBaaSClient {
     }
 
     public Call<DeviceMetricsResponse> sendMetrics(String messageId) {
-        return this.service.sendMetrics(application.getMBaaSClientId(), messageId);
+        return this.service.sendMetrics(messageId);
     }
 
     public Call<JavaScriptExecuteResponse> javascriptExecutePost(String script) {
@@ -109,6 +117,22 @@ public class MBaaSClient {
 
     public Call<JavaScriptExecuteResponse> javascriptExecutePut(String script, JavaScriptExecuteRequest request) {
         return this.service.javascriptExecutePut(script, request);
+    }
+
+    public Call<FileCreateResponse> fileCreate(String filename, FileCreateRequest request) {
+        return this.service.fileCreate(filename, request);
+    }
+
+    public Call<FileDeleteResponse> fileDelete(String fileId) {
+        return this.fileDelete(fileId);
+    }
+
+    public Call<AssetCreateResponse> assetCreate(String filename, AssetCreateRequest request) {
+        return this.assetCreate(filename, request);
+    }
+
+    public Call<AssetDeleteResponse> assetDelete(String assetId) {
+        return this.assetDelete(assetId);
     }
 
     public Call<MonitorTimeResponse> monitorTime() {

@@ -23,11 +23,17 @@ public class NetworkInterceptor implements Interceptor {
 
     private final String clientSecret;
 
-    public NetworkInterceptor(SharedPreferences preferences, String clientId, String clientSecret, String userAgent) {
+    private final String appVersion;
+
+    private final String sdkVersion;
+
+    public NetworkInterceptor(SharedPreferences preferences, String clientId, String clientSecret, String appVersion, String sdkVersion, String userAgent) {
         this.userAgent = userAgent;
         this.preferences = preferences;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
+        this.appVersion = appVersion;
+        this.sdkVersion = sdkVersion;
     }
 
     @Override
@@ -47,6 +53,14 @@ public class NetworkInterceptor implements Interceptor {
 
         if (this.clientId != null && !"".equals(this.clientId)) {
             builder.header("client_id", this.clientId);
+        }
+
+        if (this.appVersion != null && !"".equals(this.appVersion)) {
+            builder.header("app_version", this.appVersion);
+        }
+
+        if (this.sdkVersion != null && !"".equals(this.sdkVersion)) {
+            builder.header("sdk_version", this.sdkVersion);
         }
 
         builder.header("User-Agent", userAgent);

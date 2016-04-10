@@ -1,5 +1,7 @@
 package com.angkorteam.mbaas.sdk.android.example;
 
+import android.content.pm.PackageManager;
+
 import com.angkorteam.mbaas.sdk.android.library.MBaaSApplication;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSClient;
 
@@ -37,7 +39,15 @@ public class Application extends android.app.Application implements MBaaSApplica
     @Override
     public String getMBaaSAddress() {
         return "http://pkayjava.ddns.net:9080/mbaas-server/";
-//        return "http://192.168.1.114:7080/";
+    }
+
+    @Override
+    public String getMBaaSAppVersion() {
+        try {
+            return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            return "N/A";
+        }
     }
 
     @Override

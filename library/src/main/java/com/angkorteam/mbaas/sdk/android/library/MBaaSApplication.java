@@ -27,4 +27,6 @@ public interface MBaaSApplication {
 
     public List<String> getMBaaSCategories();
 
+    public String getMBaaSAppVersion();
+
 }
