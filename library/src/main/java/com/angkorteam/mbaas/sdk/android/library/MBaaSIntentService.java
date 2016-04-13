@@ -1,5 +1,6 @@
 package com.angkorteam.mbaas.sdk.android.library;
 
+import android.app.Activity;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,7 +18,7 @@ import com.google.android.gms.iid.InstanceID;
 
 import java.io.IOException;
 
-import retrofit2.*;
+import retrofit2.Call;
 
 /**
  * Created by socheat on 4/13/16.
@@ -33,6 +34,8 @@ public class MBaaSIntentService extends IntentService {
 
     public static final String ACCESS_TOKEN = "accessToken";
     public static final String REFRESH_TOKEN = "refreshToken";
+
+    public static final String OAUTH2_RESULT = "result";
 
     public static final String OAUTH2_STATE = "state";
     public static final String OAUTH2_CODE = "code";
@@ -77,6 +80,17 @@ public class MBaaSIntentService extends IntentService {
                 OAuth2AuthorizeResponse responseBody = response.body();
                 sharedPreferences.edit().putString(MBaaSIntentService.ACCESS_TOKEN, responseBody.getAccessToken()).apply();
                 sharedPreferences.edit().putString(MBaaSIntentService.REFRESH_TOKEN, responseBody.getRefreshToken()).apply();
+            }
+            if (intent.hasExtra(MBaaSIntentService.RECEIVER) && intent.getStringExtra(MBaaSIntentService.RECEIVER) != null && !"".equals(intent.getStringExtra(MBaaSIntentService.RECEIVER))) {
+                String receiver = intent.getStringExtra(MBaaSIntentService.RECEIVER);
+                Intent receiverIntent = new Intent(receiver);
+                if (response != null && response.body() != null && response.body().getHttpCode() == 200) {
+                    receiverIntent.putExtra(MBaaSIntentService.OAUTH2_RESULT, Activity.RESULT_OK);
+                } else {
+                    receiverIntent.putExtra(MBaaSIntentService.OAUTH2_RESULT, Activity.RESULT_CANCELED);
+                }
+                LocalBroadcastManager.getInstance(this).sendBroadcast(receiverIntent);
+                return;
             }
         } else if (SERVICE_REFRESH_TOKEN.equals(intent.getStringExtra(MBaaSIntentService.SERVICE))) {
             MBaaSClient client = application.getMBaaSClient();

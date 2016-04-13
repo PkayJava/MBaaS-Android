@@ -1,5 +1,6 @@
 package com.angkorteam.mbaas.sdk.android.library;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -25,6 +26,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private WebView webView;
 
+    public final static int REQUEST_CODE = 200;
+
     private String link;
 
     private final static String RECEIVER = "oauth2";
@@ -32,7 +35,9 @@ public class LoginActivity extends AppCompatActivity {
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            finish();
+            Intent activityIntent = new Intent();
+            LoginActivity.this.setResult(intent.getIntExtra(MBaaSIntentService.OAUTH2_RESULT, Activity.RESULT_CANCELED), activityIntent);
+            LoginActivity.this.finish();
         }
     };
 
@@ -50,6 +55,7 @@ public class LoginActivity extends AppCompatActivity {
 
         if (application == null) {
             Intent message = new Intent(LoginActivity.RECEIVER);
+            message.putExtra(MBaaSIntentService.OAUTH2_RESULT, Activity.RESULT_CANCELED);
             LocalBroadcastManager.getInstance(this).sendBroadcast(message);
             return;
         }
@@ -72,6 +78,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 if (application == null) {
                     Intent message = new Intent(LoginActivity.RECEIVER);
+                    message.putExtra(MBaaSIntentService.OAUTH2_RESULT, Activity.RESULT_CANCELED);
                     LocalBroadcastManager.getInstance(view.getContext()).sendBroadcast(message);
                     return true;
                 }

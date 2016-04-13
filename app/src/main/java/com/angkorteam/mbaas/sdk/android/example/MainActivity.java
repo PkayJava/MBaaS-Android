@@ -4,17 +4,21 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
-import com.angkorteam.mbaas.sdk.android.library.LoginActivity;
+import com.angkorteam.mbaas.sdk.android.library.MBaaSCallback;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSIntentService;
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
+import com.angkorteam.mbaas.sdk.android.library.response.monitor.MonitorTimeResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.gson.Gson;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -31,18 +35,37 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Intent intentActivity = new Intent(context, LoginActivity.class);
-            startActivity(intentActivity);
+            Application application = (Application) getApplication();
+            Call<MonitorTimeResponse> responseCall = application.getMBaaSClient().monitorTime();
+            responseCall.enqueue(monitorTimeCallback);
         }
     };
+
+    private MBaaSCallback<MonitorTimeResponse> monitorTimeCallback = new MBaaSCallback<MonitorTimeResponse>(this) {
+
+        @Override
+        protected void doResponse(Call<MonitorTimeResponse> call, Response<MonitorTimeResponse> response) {
+            Log.i("MBaaS", "Server Time : " + response.body().getData());
+        }
+
+        @Override
+        protected void doFailure(Call<MonitorTimeResponse> call, Throwable t) {
+        }
+
+    };
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i("MBaaS", "requestCode " + requestCode + ", resultCode " + resultCode);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         Application application = (Application) getApplication();
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,
-                new IntentFilter("token"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, new IntentFilter("token"));
 
         setContentView(R.layout.activity_main);
         mInformationTextView = (TextView) findViewById(R.id.informationTextView);

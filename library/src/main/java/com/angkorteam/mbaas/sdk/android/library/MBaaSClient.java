@@ -74,7 +74,7 @@ public class MBaaSClient {
         HttpLoggingInterceptor logger = new HttpLoggingInterceptor();
         logger.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient httpClient = new OkHttpClient.Builder()
-                .addInterceptor(logger)
+                // .addInterceptor(logger)
                 .addNetworkInterceptor(new NetworkInterceptor(this.sharedPreferences, this.application.getMBaaSClientId(), this.application.getMBaaSClientSecret(), this.application.getMBaaSAppVersion(), SDK_VERSION, System.getProperty("http.agent")))
                 .build();
         Retrofit retrofit = new Retrofit.Builder()
@@ -158,30 +158,6 @@ public class MBaaSClient {
 
     public Call<MonitorTimeResponse> monitorTime() {
         return this.service.monitorTime();
-    }
-
-    public void login() {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this.context);
-        alert.setTitle("Mobile Backend as a Service");
-
-        WebView wv = new WebView(context);
-        wv.loadUrl("http:\\www.google.com");
-        wv.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                view.loadUrl(url);
-                return true;
-            }
-        });
-
-        alert.setView(wv);
-        alert.setNegativeButton("Close", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.dismiss();
-            }
-        });
-        alert.show();
     }
 
 }
