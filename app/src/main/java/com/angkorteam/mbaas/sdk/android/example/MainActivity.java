@@ -44,6 +44,8 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
 
                 });
             }
+        } else if (resultCode == Activity.RESULT_CANCELED) {
+            mInformationTextView.setText("User Denied");
         }
         Log.i("MBaaS", "requestCode " + requestCode + ", resultCode " + resultCode);
     }
