@@ -1,9 +1,11 @@
 package com.angkorteam.mbaas.sdk.android.example;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 
 import com.angkorteam.mbaas.sdk.android.library.MBaaSApplication;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSClient;
+import com.angkorteam.mbaas.sdk.android.library.MBaaSIntentService;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,6 +21,11 @@ public class Application extends android.app.Application implements MBaaSApplica
     public void onCreate() {
         super.onCreate();
         this.mbaasClient = new MBaaSClient(this, this);
+
+        Intent intent = new Intent(this, MBaaSIntentService.class);
+        intent.putExtra(MBaaSIntentService.SERVICE, MBaaSIntentService.SERVICE_GCM_TOKEN);
+        intent.putExtra(MBaaSIntentService.SENDER_ID, getSenderId());
+        startService(intent);
     }
 
     @Override

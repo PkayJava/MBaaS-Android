@@ -26,8 +26,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private WebView webView;
 
-    public final static int REQUEST_CODE = 200;
-
     private String link;
 
     private final static String RECEIVER = "oauth2";
