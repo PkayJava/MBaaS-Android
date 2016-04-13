@@ -88,17 +88,22 @@ public class LoginActivity extends AppCompatActivity {
                     String[] queryParams = StringUtils.split(query, '&');
                     for (String queryParam : queryParams) {
                         String[] param = StringUtils.split(queryParam, '=');
-                        String name = param[0];
-                        String value = param[1];
+                        String name = param.length >= 1 ? param[0] : null;
+                        String value = param.length >= 2 ? param[1] : null;
                         oauth2.put(name, value);
-
                     }
-                    Intent serviceIntent = new Intent(view.getContext(), MBaaSIntentService.class);
-                    serviceIntent.putExtra(MBaaSIntentService.SERVICE, MBaaSIntentService.SERVICE_ACCESS_TOKEN);
-                    serviceIntent.putExtra(MBaaSIntentService.OAUTH2_CODE, oauth2.get(MBaaSIntentService.OAUTH2_CODE));
-                    serviceIntent.putExtra(MBaaSIntentService.OAUTH2_STATE, oauth2.get(MBaaSIntentService.OAUTH2_STATE));
-                    serviceIntent.putExtra(MBaaSIntentService.RECEIVER, LoginActivity.RECEIVER);
-                    startService(serviceIntent);
+                    if (oauth2.get("error") != null && !"".equals(oauth2.get("error"))) {
+                        Intent message = new Intent(LoginActivity.RECEIVER);
+                        message.putExtra(MBaaSIntentService.OAUTH2_RESULT, Activity.RESULT_CANCELED);
+                        LocalBroadcastManager.getInstance(view.getContext()).sendBroadcast(message);
+                    } else {
+                        Intent serviceIntent = new Intent(view.getContext(), MBaaSIntentService.class);
+                        serviceIntent.putExtra(MBaaSIntentService.SERVICE, MBaaSIntentService.SERVICE_ACCESS_TOKEN);
+                        serviceIntent.putExtra(MBaaSIntentService.OAUTH2_CODE, oauth2.get(MBaaSIntentService.OAUTH2_CODE));
+                        serviceIntent.putExtra(MBaaSIntentService.OAUTH2_STATE, oauth2.get(MBaaSIntentService.OAUTH2_STATE));
+                        serviceIntent.putExtra(MBaaSIntentService.RECEIVER, LoginActivity.RECEIVER);
+                        startService(serviceIntent);
+                    }
                     return true;
                 } else {
                     return false;
