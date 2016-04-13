@@ -1,22 +1,19 @@
 package com.angkorteam.mbaas.sdk.android.example;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
-import com.angkorteam.mbaas.sdk.android.example.gcm.RegistrationIntentService;
-import com.angkorteam.mbaas.sdk.android.library.MBaaSClient;
-import com.angkorteam.mbaas.sdk.android.library.request.file.FileCreateRequest;
-import com.angkorteam.mbaas.sdk.android.library.response.file.FileCreateResponse;
+import com.angkorteam.mbaas.sdk.android.library.MBaaSIntentService;
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.gson.Gson;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -30,45 +27,32 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
     private TextView mInformationTextView;
     private boolean isReceiverRegistered;
 
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Intent intentActivity = new Intent(context, WebViewActivity.class);
+            startActivity(intentActivity);
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Application application = (Application) getApplication();
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,
+                new IntentFilter("token"));
+
         setContentView(R.layout.activity_main);
         mInformationTextView = (TextView) findViewById(R.id.informationTextView);
 
         if (checkPlayServices()) {
             // Start IntentService to register this application with GCM.
-            Intent intent = new Intent(this, RegistrationIntentService.class);
+            Intent intent = new Intent(this, MBaaSIntentService.class);
+            intent.putExtra(MBaaSIntentService.SERVICE, MBaaSIntentService.SERVICE_GCM_TOKEN);
+            intent.putExtra(MBaaSIntentService.SENDER_ID, application.getSenderId());
+            intent.putExtra(MBaaSIntentService.RECEIVER, "token");
             startService(intent);
-        }
-
-        MBaaSClient client = ((Application) getApplication()).getMBaaSClient();
-
-        {
-            Map<String, Object> params = new HashMap<>();
-            params.put("title", "hot");
-//            Call<JavaScriptExecuteResponse> responseCall = client.javascriptExecuteGet("getnews", params);
-//            responseCall.enqueue(this);
-        }
-
-        {
-            FileCreateRequest request = new FileCreateRequest();
-            request.setContentType("text/plain");
-            request.setContent("I Love You".getBytes());
-            Call<FileCreateResponse> responseCall = client.fileCreate("text.txt", request);
-            responseCall.enqueue(new Callback<FileCreateResponse>() {
-                @Override
-                public void onResponse(Call<FileCreateResponse> call, Response<FileCreateResponse> response) {
-                    Log.i("MBaaS", "A " + new Gson().toJson(response.body()));
-                    Log.i("MBaaS", "B " + new Gson().toJson(response.message()));
-                    Log.i("MBaaS", "B " + new Gson().toJson(response.code()));
-                }
-
-                @Override
-                public void onFailure(Call<FileCreateResponse> call, Throwable t) {
-                    Log.i("MBaaS", "C " + t.getMessage());
-                }
-            });
         }
     }
 
@@ -92,6 +76,12 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
     @Override
     protected void onPause() {
         super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        super.onDestroy();
     }
 
     /**

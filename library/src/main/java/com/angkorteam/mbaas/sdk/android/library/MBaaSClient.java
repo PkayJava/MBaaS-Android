@@ -21,6 +21,7 @@ import com.angkorteam.mbaas.sdk.android.library.response.file.FileCreateResponse
 import com.angkorteam.mbaas.sdk.android.library.response.file.FileDeleteResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.monitor.MonitorTimeResponse;
+import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2AuthorizeResponse;
 import com.angkorteam.mbaas.sdk.android.library.retrofit.NetworkInterceptor;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -35,6 +36,7 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
+import retrofit2.http.Field;
 import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
@@ -49,8 +51,6 @@ import retrofit2.http.QueryMap;
 public class MBaaSClient {
 
     private static final String SDK_VERSION = "1.0.0";
-
-    public static final String ACCESS_TOKEN = "accessToken";
 
     private final Context context;
 
@@ -82,6 +82,14 @@ public class MBaaSClient {
                 .callbackExecutor(Executors.newFixedThreadPool(5))
                 .build();
         this.service = retrofit.create(IService.class);
+    }
+
+    public Call<OAuth2AuthorizeResponse> oauth2Authorize(String state, String code) {
+        String clientId = application.getMBaaSClientId();
+        String clientSecret = application.getMBaaSClientSecret();
+        String grantType = MBaaSIntentService.OAUTH2_GRANT_TYPE_AUTHORIZATION_CODE;
+        String redirectUri = null;
+        return this.service.oauth2Authorize(clientId, clientSecret, grantType, redirectUri, state, code);
     }
 
     public Call<DeviceRegisterResponse> deviceRegister(DeviceRegisterRequest request) {

@@ -3,6 +3,7 @@ package com.angkorteam.mbaas.sdk.android.library.retrofit;
 import android.content.SharedPreferences;
 
 import com.angkorteam.mbaas.sdk.android.library.MBaaSClient;
+import com.angkorteam.mbaas.sdk.android.library.MBaaSIntentService;
 
 import java.io.IOException;
 
@@ -42,7 +43,7 @@ public class NetworkInterceptor implements Interceptor {
 
         Request.Builder builder = originalRequest.newBuilder();
 
-        String accessToken = preferences.getString(MBaaSClient.ACCESS_TOKEN, "");
+        String accessToken = preferences.getString(MBaaSIntentService.ACCESS_TOKEN, "");
         if (!"".equals(accessToken)) {
             builder.header("Authorization", "Bearer " + accessToken);
         } else {

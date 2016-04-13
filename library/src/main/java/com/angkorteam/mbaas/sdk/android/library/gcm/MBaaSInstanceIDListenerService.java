@@ -2,15 +2,15 @@ package com.angkorteam.mbaas.sdk.android.library.gcm;
 
 import android.content.Intent;
 
+import com.angkorteam.mbaas.sdk.android.library.MBaaSApplication;
+import com.angkorteam.mbaas.sdk.android.library.MBaaSIntentService;
+
 /**
  * Created by socheat on 4/8/16.
  */
 public class MBaaSInstanceIDListenerService extends com.google.android.gms.iid.InstanceIDListenerService {
 
-    private Class<? extends MBaaSRegistrationIntentService> clazz;
-
-    public MBaaSInstanceIDListenerService(Class<? extends MBaaSRegistrationIntentService> clazz) {
-        this.clazz = clazz;
+    public MBaaSInstanceIDListenerService() {
     }
 
     /**
@@ -22,7 +22,16 @@ public class MBaaSInstanceIDListenerService extends com.google.android.gms.iid.I
     @Override
     public final void onTokenRefresh() {
         // Fetch updated Instance ID token and notify our app's server of any changes (if applicable).
-        Intent intent = new Intent(this, this.clazz);
+        MBaaSApplication application = null;
+        if (getApplication() instanceof MBaaSApplication) {
+            application = (MBaaSApplication) getApplication();
+        }
+        if (application == null) {
+            return;
+        }
+        Intent intent = new Intent(this, MBaaSIntentService.class);
+        intent.putExtra(MBaaSIntentService.SERVICE, MBaaSIntentService.SERVICE_GCM_TOKEN);
+        intent.putExtra(MBaaSIntentService.SENDER_ID, application.getSenderId());
         startService(intent);
     }
     // [END refresh_token]

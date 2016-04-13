@@ -13,6 +13,7 @@ import com.angkorteam.mbaas.sdk.android.library.response.file.FileCreateResponse
 import com.angkorteam.mbaas.sdk.android.library.response.file.FileDeleteResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.monitor.MonitorTimeResponse;
+import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2AuthorizeResponse;
 
 import java.util.Map;
 import java.util.Objects;
@@ -21,6 +22,7 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
+import retrofit2.http.Field;
 import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
@@ -43,6 +45,15 @@ public interface IService {
 
     @PUT("api/rest/registry/device/pushMessage/{messageId}")
     public Call<DeviceMetricsResponse> sendMetrics(@Path("messageId") String messageId);
+
+    @POST("api/oauth2/authorize")
+    @FormUrlEncoded
+    public Call<OAuth2AuthorizeResponse> oauth2Authorize(@Field("client_id") String clientId,
+                                                         @Field("client_secret") String clientSecret,
+                                                         @Field("grant_type") String grantType,
+                                                         @Field("redirect_uri") String redirectUri,
+                                                         @Field("state") String state,
+                                                         @Field("code") String code);
 
     @POST("api/javascript/execute/{script}")
     public Call<JavaScriptExecuteResponse> javascriptExecutePost(@Path("script") String script);
