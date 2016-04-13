@@ -12,6 +12,7 @@ import com.angkorteam.mbaas.sdk.android.library.request.asset.AssetCreateRequest
 import com.angkorteam.mbaas.sdk.android.library.request.device.DeviceRegisterRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.file.FileCreateRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.javascript.JavaScriptExecuteRequest;
+import com.angkorteam.mbaas.sdk.android.library.request.oauth2.OAuth2RefreshRequest;
 import com.angkorteam.mbaas.sdk.android.library.response.asset.AssetCreateResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.asset.AssetDeleteResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.device.DeviceMetricsResponse;
@@ -22,6 +23,7 @@ import com.angkorteam.mbaas.sdk.android.library.response.file.FileDeleteResponse
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.monitor.MonitorTimeResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2AuthorizeResponse;
+import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2RefreshResponse;
 import com.angkorteam.mbaas.sdk.android.library.retrofit.NetworkInterceptor;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -54,7 +56,7 @@ public class MBaaSClient {
 
     private final Context context;
 
-    private final SharedPreferences preferences;
+    private final SharedPreferences sharedPreferences;
 
     private final Gson gson;
 
@@ -65,7 +67,7 @@ public class MBaaSClient {
     public MBaaSClient(MBaaSApplication application, Context context) {
         this.application = application;
         this.context = context;
-        this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
         this.gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ").create();
 
@@ -73,7 +75,7 @@ public class MBaaSClient {
         logger.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient httpClient = new OkHttpClient.Builder()
                 .addInterceptor(logger)
-                .addNetworkInterceptor(new NetworkInterceptor(this.preferences, this.application.getMBaaSClientId(), this.application.getMBaaSClientSecret(), this.application.getMBaaSAppVersion(), SDK_VERSION, System.getProperty("http.agent")))
+                .addNetworkInterceptor(new NetworkInterceptor(this.sharedPreferences, this.application.getMBaaSClientId(), this.application.getMBaaSClientSecret(), this.application.getMBaaSAppVersion(), SDK_VERSION, System.getProperty("http.agent")))
                 .build();
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(this.application.getMBaaSAddress())
@@ -94,6 +96,12 @@ public class MBaaSClient {
 
     public Call<DeviceRegisterResponse> deviceRegister(DeviceRegisterRequest request) {
         return this.service.deviceRegister(request);
+    }
+
+    public Call<OAuth2RefreshResponse> oauth2Refresh(String refreshToken) {
+        OAuth2RefreshRequest request = new OAuth2RefreshRequest();
+        request.setRefreshToken(refreshToken);
+        return this.service.oauth2Refresh(request);
     }
 
     public Call<DeviceUnregisterResponse> deviceUnregister(String deviceToken) {

@@ -28,7 +28,7 @@
         </activity>
 
         <activity
-            android:name=".WebViewActivity"
+            android:name="com.angkorteam.mbaas.sdk.android.library.LoginActivity"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
 
         <!-- [START gcm_receiver] -->

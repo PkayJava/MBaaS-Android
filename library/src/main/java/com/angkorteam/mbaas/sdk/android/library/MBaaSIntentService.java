@@ -10,6 +10,7 @@ import android.util.Log;
 import com.angkorteam.mbaas.sdk.android.library.request.device.DeviceRegisterRequest;
 import com.angkorteam.mbaas.sdk.android.library.response.device.DeviceRegisterResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2AuthorizeResponse;
+import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2RefreshResponse;
 import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
@@ -78,7 +79,18 @@ public class MBaaSIntentService extends IntentService {
                 sharedPreferences.edit().putString(MBaaSIntentService.REFRESH_TOKEN, responseBody.getRefreshToken()).apply();
             }
         } else if (SERVICE_REFRESH_TOKEN.equals(intent.getStringExtra(MBaaSIntentService.SERVICE))) {
-
+            MBaaSClient client = application.getMBaaSClient();
+            String refreshToken = sharedPreferences.getString(MBaaSIntentService.REFRESH_TOKEN, "");
+            Call<OAuth2RefreshResponse> responseCall = client.oauth2Refresh(refreshToken);
+            retrofit2.Response<OAuth2RefreshResponse> response = null;
+            try {
+                response = responseCall.execute();
+            } catch (IOException e) {
+            }
+            if (response != null) {
+                OAuth2RefreshResponse responseBody = response.body();
+                sharedPreferences.edit().putString(MBaaSIntentService.ACCESS_TOKEN, responseBody.getAccessToken()).apply();
+            }
         } else if (SERVICE_GCM_TOKEN.equals(intent.getStringExtra(MBaaSIntentService.SERVICE))) {
             try {
                 InstanceID instanceID = InstanceID.getInstance(this);

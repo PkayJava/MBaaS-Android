@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.angkorteam.mbaas.sdk.android.library.LoginActivity;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSIntentService;
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
 import com.google.android.gms.common.ConnectionResult;
@@ -30,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Intent intentActivity = new Intent(context, WebViewActivity.class);
+            Intent intentActivity = new Intent(context, LoginActivity.class);
             startActivity(intentActivity);
         }
     };

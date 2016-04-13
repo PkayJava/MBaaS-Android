@@ -4,6 +4,7 @@ import com.angkorteam.mbaas.sdk.android.library.request.asset.AssetCreateRequest
 import com.angkorteam.mbaas.sdk.android.library.request.device.DeviceRegisterRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.file.FileCreateRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.javascript.JavaScriptExecuteRequest;
+import com.angkorteam.mbaas.sdk.android.library.request.oauth2.OAuth2RefreshRequest;
 import com.angkorteam.mbaas.sdk.android.library.response.asset.AssetCreateResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.asset.AssetDeleteResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.device.DeviceMetricsResponse;
@@ -14,6 +15,7 @@ import com.angkorteam.mbaas.sdk.android.library.response.file.FileDeleteResponse
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.monitor.MonitorTimeResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2AuthorizeResponse;
+import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2RefreshResponse;
 
 import java.util.Map;
 import java.util.Objects;
@@ -54,6 +56,9 @@ public interface IService {
                                                          @Field("redirect_uri") String redirectUri,
                                                          @Field("state") String state,
                                                          @Field("code") String code);
+
+    @POST("api/oauth2/refresh")
+    public Call<OAuth2RefreshResponse> oauth2Refresh(@Body OAuth2RefreshRequest request);
 
     @POST("api/javascript/execute/{script}")
     public Call<JavaScriptExecuteResponse> javascriptExecutePost(@Path("script") String script);
