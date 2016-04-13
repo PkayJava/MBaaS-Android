@@ -8,6 +8,7 @@ import android.util.Log;
 import android.widget.TextView;
 
 import com.angkorteam.mbaas.sdk.android.library.MBaaSCallback;
+import com.angkorteam.mbaas.sdk.android.library.MBaaSOperation;
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.monitor.MonitorTimeResponse;
 import com.google.android.gms.common.ConnectionResult;
@@ -17,7 +18,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity implements Callback<JavaScriptExecuteResponse> {
+public class MainActivity extends AppCompatActivity implements Callback<JavaScriptExecuteResponse>, MBaaSOperation {
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     public static final String TAG = "MBaaS";
@@ -30,19 +31,7 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
             if (requestCode == 100) {
                 Application application = (Application) getApplication();
                 Call<MonitorTimeResponse> responseCall = application.getMBaaSClient().monitorTime();
-                responseCall.enqueue(new MBaaSCallback<MonitorTimeResponse>(100, this) {
-
-                    @Override
-                    protected void doResponse(Call<MonitorTimeResponse> call, Response<MonitorTimeResponse> response) {
-                        Log.i("MBaaS", "Server Time : " + response.body().getData());
-                        mInformationTextView.setText(response.body().getData());
-                    }
-
-                    @Override
-                    protected void doFailure(Call<MonitorTimeResponse> call, Throwable t) {
-                    }
-
-                });
+                responseCall.enqueue(new MBaaSCallback<MonitorTimeResponse>(100, this, this));
             }
         } else if (resultCode == Activity.RESULT_CANCELED) {
             mInformationTextView.setText("User Denied");
@@ -59,19 +48,7 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
 
         Application application = (Application) getApplication();
         Call<MonitorTimeResponse> responseCall = application.getMBaaSClient().monitorTime();
-        responseCall.enqueue(new MBaaSCallback<MonitorTimeResponse>(100, this) {
-
-            @Override
-            protected void doResponse(Call<MonitorTimeResponse> call, Response<MonitorTimeResponse> response) {
-                Log.i("MBaaS", "Server Time : " + response.body().getData());
-                mInformationTextView.setText(response.body().getData());
-            }
-
-            @Override
-            protected void doFailure(Call<MonitorTimeResponse> call, Throwable t) {
-            }
-
-        });
+        responseCall.enqueue(new MBaaSCallback<MonitorTimeResponse>(100, this, this));
     }
 
     @Override
@@ -122,4 +99,20 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
         return true;
     }
 
+    @Override
+    public void operationResponse(int operationId, Object object) {
+        if (operationId == 100) {
+            MonitorTimeResponse response = (MonitorTimeResponse) object;
+            mInformationTextView.setText(response.getData());
+        }
+    }
+
+    @Override
+    public void operationRetry(int operationId) {
+        if (operationId == 100) {
+            Application application = (Application) getApplication();
+            Call<MonitorTimeResponse> responseCall = application.getMBaaSClient().monitorTime();
+            responseCall.enqueue(new MBaaSCallback<MonitorTimeResponse>(100, this, this));
+        }
+    }
 }
