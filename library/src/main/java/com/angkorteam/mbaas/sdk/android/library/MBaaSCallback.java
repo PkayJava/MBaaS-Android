@@ -32,54 +32,57 @@ public class MBaaSCallback<T extends Response> implements Callback<T> {
     @Override
     public final void onResponse(final Call<T> call, final retrofit2.Response<T> response) {
         if (response.body() != null) {
-            if (response.body().getHttpCode() == 403 || response.body().getHttpCode() == 401) {
-                MBaaSApplication application = null;
-                if (this.activity.getApplication() instanceof MBaaSApplication) {
-                    application = (MBaaSApplication) this.activity.getApplication();
-                }
-                if (application != null) {
-                    Intent intentActivity = new Intent(this.activity, LoginActivity.class);
-                    this.activity.startActivityForResult(intentActivity, operationId);
-                }
-            } else if (response.body().getHttpCode() == 423) {
-                MBaaSApplication application = null;
-                if (this.activity.getApplication() instanceof MBaaSApplication) {
-                    application = (MBaaSApplication) this.activity.getApplication();
-                }
-                if (application != null) {
-                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
-                    String refreshToken = sharedPreferences.getString(MBaaSIntentService.REFRESH_TOKEN, "");
-                    Call<OAuth2RefreshResponse> responseCall = application.getMBaaSClient().oauth2Refresh(refreshToken);
-                    retrofit2.Response<OAuth2RefreshResponse> responseBody = null;
-                    try {
-                        responseBody = responseCall.execute();
-                    } catch (IOException e) {
+            final T body = response.body();
+            if (body != null) {
+                if (body.getHttpCode() == 403 || body.getHttpCode() == 401) {
+                    MBaaSApplication application = null;
+                    if (this.activity.getApplication() instanceof MBaaSApplication) {
+                        application = (MBaaSApplication) this.activity.getApplication();
                     }
-                    if (responseBody != null) {
-                        if (responseBody.body().getHttpCode() == 200) {
-                            sharedPreferences.edit().putString(MBaaSIntentService.ACCESS_TOKEN, responseBody.body().getAccessToken()).apply();
-                            if (operation != null) {
-                                operation.operationRetry(operationId);
+                    if (application != null) {
+                        Intent intentActivity = new Intent(this.activity, LoginActivity.class);
+                        this.activity.startActivityForResult(intentActivity, operationId);
+                    }
+                } else if (body.getHttpCode() == 423) {
+                    MBaaSApplication application = null;
+                    if (this.activity.getApplication() instanceof MBaaSApplication) {
+                        application = (MBaaSApplication) this.activity.getApplication();
+                    }
+                    if (application != null) {
+                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
+                        String refreshToken = sharedPreferences.getString(MBaaSIntentService.REFRESH_TOKEN, "");
+                        Call<OAuth2RefreshResponse> responseCall = application.getMBaaSClient().oauth2Refresh(refreshToken);
+                        retrofit2.Response<OAuth2RefreshResponse> responseBody = null;
+                        try {
+                            responseBody = responseCall.execute();
+                        } catch (IOException e) {
+                        }
+                        if (responseBody != null) {
+                            if (responseBody.body().getHttpCode() == 200) {
+                                sharedPreferences.edit().putString(MBaaSIntentService.ACCESS_TOKEN, responseBody.body().getAccessToken()).apply();
+                                if (operation != null) {
+                                    operation.operationRetry(operationId);
+                                }
                             }
                         }
                     }
-                }
-            } else {
-                this.activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (operation != null) {
-                            operation.operationResponse(operationId, response.body());
+                } else {
+                    this.activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (operation != null) {
+                                operation.operationResponse(operationId, body);
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
         } else {
             this.activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (operation != null) {
-                        operation.operationResponse(operationId, response.body());
+                        operation.operationResponse(operationId, null);
                     }
                 }
             });
@@ -88,8 +91,13 @@ public class MBaaSCallback<T extends Response> implements Callback<T> {
 
     @Override
     public final void onFailure(final Call<T> call, final Throwable t) {
-        if (this.operation != null) {
-            this.operation.operationRetry(this.operationId);
-        }
+        this.activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (operation != null) {
+                    operation.operationResponse(operationId, null);
+                }
+            }
+        });
     }
 }

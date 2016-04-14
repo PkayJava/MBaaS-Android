@@ -102,8 +102,11 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
     public void operationResponse(int operationId, Object object) {
         if (operationId == 100) {
             JavaScriptExecuteResponse response = (JavaScriptExecuteResponse) object;
-            response.getData().getBody();
-            mInformationTextView.setText((String) response.getData().getBody());
+            if (response.getHttpCode() == 200) {
+                mInformationTextView.setText((String) response.getData().getBody());
+            } else {
+                mInformationTextView.setText(response.getResult());
+            }
         }
     }
 
