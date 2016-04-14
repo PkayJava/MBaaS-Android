@@ -13,6 +13,9 @@ import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptEx
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
+import java.util.List;
+import java.util.Map;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -29,7 +32,7 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == 100) {
                 Application application = (Application) getApplication();
-                Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecuteGet("test");
+                Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("jskhmertoday");
                 responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, this));
             }
         } else if (resultCode == Activity.RESULT_CANCELED) {
@@ -46,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
         mInformationTextView = (TextView) findViewById(R.id.informationTextView);
 
         Application application = (Application) getApplication();
-        Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecuteGet("test");
+        Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("jskhmertoday");
         responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, this));
     }
 
@@ -103,7 +106,8 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
         if (operationId == 100) {
             JavaScriptExecuteResponse response = (JavaScriptExecuteResponse) object;
             if (response.getHttpCode() == 200) {
-                mInformationTextView.setText((String) response.getData().getBody());
+                List<Map<String, Object>> test = (List<Map<String, Object>>) response.getData().getBody();
+                mInformationTextView.setText((String) test.get(0).get("title"));
             } else {
                 mInformationTextView.setText(response.getResult());
             }
@@ -114,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
     public void operationRetry(int operationId) {
         if (operationId == 100) {
             Application application = (Application) getApplication();
-            Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecuteGet("test");
+            Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("jskhmertoday");
             responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, this));
         }
     }

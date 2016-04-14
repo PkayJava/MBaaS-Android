@@ -61,13 +61,6 @@ public interface IService {
     public Call<OAuth2RefreshResponse> oauth2Refresh(@Body OAuth2RefreshRequest request);
 
     @POST("api/javascript/execute/{script}")
-    public Call<JavaScriptExecuteResponse> javascriptExecutePost(@Path("script") String script);
-
-    @POST("api/javascript/execute/{script}")
-    @FormUrlEncoded
-    public Call<JavaScriptExecuteResponse> javascriptExecutePost(@Path("script") String script, @FieldMap Map<String, Object> params);
-
-    @POST("api/javascript/execute/{script}")
     public Call<JavaScriptExecuteResponse> javascriptExecutePost(@Path("script") String script, @Body JavaScriptExecuteRequest request);
 
     @GET("api/javascript/execute/{script}")

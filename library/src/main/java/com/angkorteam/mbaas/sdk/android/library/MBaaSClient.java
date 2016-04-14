@@ -1,12 +1,8 @@
 package com.angkorteam.mbaas.sdk.android.library;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import com.angkorteam.mbaas.sdk.android.library.request.asset.AssetCreateRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.device.DeviceRegisterRequest;
@@ -28,24 +24,14 @@ import com.angkorteam.mbaas.sdk.android.library.retrofit.NetworkInterceptor;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
 import okhttp3.OkHttpClient;
-import okhttp3.ResponseBody;
-import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.Body;
-import retrofit2.http.Field;
-import retrofit2.http.FieldMap;
-import retrofit2.http.FormUrlEncoded;
-import retrofit2.http.GET;
-import retrofit2.http.POST;
-import retrofit2.http.PUT;
-import retrofit2.http.Path;
-import retrofit2.http.QueryMap;
 
 /**
  * Created by socheat on 4/6/16.
@@ -71,8 +57,8 @@ public class MBaaSClient {
 
         this.gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ").create();
 
-        HttpLoggingInterceptor logger = new HttpLoggingInterceptor();
-        logger.setLevel(HttpLoggingInterceptor.Level.BODY);
+//        HttpLoggingInterceptor logger = new HttpLoggingInterceptor();
+//        logger.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient httpClient = new OkHttpClient.Builder()
                 // .addInterceptor(logger)
                 .addNetworkInterceptor(new NetworkInterceptor(this.sharedPreferences, this.application.getMBaaSClientId(), this.application.getMBaaSClientSecret(), this.application.getMBaaSAppVersion(), SDK_VERSION, System.getProperty("http.agent")))
@@ -113,11 +99,8 @@ public class MBaaSClient {
     }
 
     public Call<JavaScriptExecuteResponse> javascriptExecutePost(String script) {
-        return this.service.javascriptExecutePost(script);
-    }
-
-    public Call<JavaScriptExecuteResponse> javascriptExecutePost(String script, Map<String, Object> params) {
-        return this.service.javascriptExecutePost(script, params);
+        JavaScriptExecuteRequest request = new JavaScriptExecuteRequest();
+        return this.service.javascriptExecutePost(script, request);
     }
 
     public Call<JavaScriptExecuteResponse> javascriptExecutePost(String script, JavaScriptExecuteRequest request) {
