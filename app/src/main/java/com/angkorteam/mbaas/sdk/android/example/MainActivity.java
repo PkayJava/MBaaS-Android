@@ -10,7 +10,6 @@ import android.widget.TextView;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSCallback;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSOperation;
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
-import com.angkorteam.mbaas.sdk.android.library.response.monitor.MonitorTimeResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
@@ -30,8 +29,8 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == 100) {
                 Application application = (Application) getApplication();
-                Call<MonitorTimeResponse> responseCall = application.getMBaaSClient().monitorTime();
-                responseCall.enqueue(new MBaaSCallback<MonitorTimeResponse>(100, this, this));
+                Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecuteGet("test");
+                responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, this));
             }
         } else if (resultCode == Activity.RESULT_CANCELED) {
             mInformationTextView.setText("User Denied");
@@ -47,8 +46,8 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
         mInformationTextView = (TextView) findViewById(R.id.informationTextView);
 
         Application application = (Application) getApplication();
-        Call<MonitorTimeResponse> responseCall = application.getMBaaSClient().monitorTime();
-        responseCall.enqueue(new MBaaSCallback<MonitorTimeResponse>(100, this, this));
+        Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecuteGet("test");
+        responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, this));
     }
 
     @Override
@@ -102,8 +101,9 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
     @Override
     public void operationResponse(int operationId, Object object) {
         if (operationId == 100) {
-            MonitorTimeResponse response = (MonitorTimeResponse) object;
-            mInformationTextView.setText(response.getData());
+            JavaScriptExecuteResponse response = (JavaScriptExecuteResponse) object;
+            response.getData().getBody();
+            mInformationTextView.setText((String) response.getData().getBody());
         }
     }
 
@@ -111,8 +111,8 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
     public void operationRetry(int operationId) {
         if (operationId == 100) {
             Application application = (Application) getApplication();
-            Call<MonitorTimeResponse> responseCall = application.getMBaaSClient().monitorTime();
-            responseCall.enqueue(new MBaaSCallback<MonitorTimeResponse>(100, this, this));
+            Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecuteGet("test");
+            responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, this));
         }
     }
 }
