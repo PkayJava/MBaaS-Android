@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
         listView = (ListView) findViewById(R.id.listView);
 
         Application application = (Application) getApplication();
-        Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("jskhmertoday");
+        Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today");
         responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, this));
     }
 
@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
     public void operationRetry(int operationId) {
         if (operationId == 100) {
             Application application = (Application) getApplication();
-            Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("jskhmertoday");
+            Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today");
             responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, this));
         }
     }
