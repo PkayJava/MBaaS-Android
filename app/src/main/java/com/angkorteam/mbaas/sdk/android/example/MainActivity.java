@@ -1,8 +1,8 @@
 package com.angkorteam.mbaas.sdk.android.example;
 
-import android.app.Activity;
-import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -10,10 +10,11 @@ import android.util.Log;
 import android.widget.TextView;
 
 import com.angkorteam.mbaas.sdk.android.library.MBaaSCallback;
-import com.angkorteam.mbaas.sdk.android.library.MBaaSOperation;
+import com.angkorteam.mbaas.sdk.android.library.NetworkBroadcastReceiver;
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,11 +25,9 @@ import Module.Data;
 import adapter.DataAdapter;
 import interfaces.OnLoadMoreListener;
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import utils.DividerItemDecoration;
 
-public class MainActivity extends AppCompatActivity implements Callback<JavaScriptExecuteResponse>, MBaaSOperation {
+public class MainActivity extends AppCompatActivity implements NetworkBroadcastReceiver.NetworkReceiver {
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     public static final String TAG = "MBaaS";
@@ -42,24 +41,14 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
     private List<Data> dataList = new ArrayList<Data>();
     private int requestCounter = 0;
 
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == 100) {
-                Application application = (Application) getApplication();
-                Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today");
-                responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, this));
-            }
-        } else if (resultCode == Activity.RESULT_CANCELED) {
-            mInformationTextView.setText("User Denied");
-        }
-        Log.i("MBaaS", "requestCode " + requestCode + ", resultCode " + resultCode);
-    }
+    private NetworkBroadcastReceiver broadcastReceiver = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        broadcastReceiver = new NetworkBroadcastReceiver(this);
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, new IntentFilter(broadcastReceiver.getUuid()));
 
         setContentView(R.layout.activity_main);
         mInformationTextView = (TextView) findViewById(R.id.informationTextView);
@@ -70,22 +59,19 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
         recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
 
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("offset", 0);
-        Application application = (Application) getApplication();
-        Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today", params);
-        responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, this));
-    }
-
-    @Override
-    public void onResponse(Call<JavaScriptExecuteResponse> call, Response<JavaScriptExecuteResponse> response) {
-        JavaScriptExecuteResponse responseBody = response.body();
-        Log.i("MBaaS", responseBody.getMethod());
-    }
-
-    @Override
-    public void onFailure(Call<JavaScriptExecuteResponse> call, Throwable t) {
-
+        if (NetworkBroadcastReceiver.EVENT_UNAUTHORIZED == getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT, -1)) {
+            onUnauthorized(getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT_ID, -1));
+        } else if (NetworkBroadcastReceiver.EVENT_RESPONSE == getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT, -1)) {
+            onResponse(getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT_ID, -1), getIntent().getStringExtra(NetworkBroadcastReceiver.EVENT_JSON));
+        } else {
+            Application application = (Application) getApplication();
+            Map<String, Object> params = new HashMap<>();
+            params.put("offset", 0);
+            Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today", params);
+            responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, broadcastReceiver));
+            Call<JavaScriptExecuteResponse> responseCall1 = application.getMBaaSClient().javascriptExecuteGet("query_khmer_today_total");
+            responseCall1.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(101, this, broadcastReceiver));
+        }
     }
 
     @Override
@@ -101,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
 
     @Override
     protected void onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
         super.onDestroy();
     }
 
@@ -126,14 +113,15 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
     }
 
     @Override
-    public void operationResponse(int operationId, Object object) {
+    public void onResponse(int operationId, String json) {
         if (operationId == 100) {
-            JavaScriptExecuteResponse response = (JavaScriptExecuteResponse) object;
+            Gson gson = new Gson();
+            JavaScriptExecuteResponse response = gson.fromJson(json, JavaScriptExecuteResponse.class);
             if (response.getHttpCode() == 200) {
                 List<Map<String, Object>> test = (List<Map<String, Object>>) response.getData();
                 List<String> titles = new ArrayList<>();
 
-                if(requestCounter == 0){
+                if (requestCounter == 0) {
                     for (Map<String, Object> t : test) {
                         data = new Data();
                         data.setTitle("" + t.get("title"));
@@ -146,8 +134,7 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
 
                     adapter = new DataAdapter(MainActivity.this, dataList, recyclerView);
                     recyclerView.setAdapter(adapter);
-                }
-                else{
+                } else {
                     dataList.remove(dataList.size() - 1);
                     adapter.notifyItemRemoved(dataList.size());
 
@@ -177,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
 
                         Application application = (Application) getApplication();
                         Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today", params);
-                        responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, MainActivity.this, MainActivity.this));
+                        responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, MainActivity.this, broadcastReceiver));
                     }
                 });
 
@@ -188,11 +175,12 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
     }
 
     @Override
-    public void operationRetry(int operationId) {
-        if (operationId == 100) {
-            Application application = (Application) getApplication();
-            Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today");
-            responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, this));
-        }
+    public void onFailure(int operationId, String message) {
+        Log.i("MBaaS", "onFailure " + operationId);
+    }
+
+    @Override
+    public void onUnauthorized(int operationId) {
+        Log.i("MBaaS", "onUnauthorized " + operationId);
     }
 }

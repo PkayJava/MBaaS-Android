@@ -1,12 +1,8 @@
 package com.angkorteam.mbaas.sdk.android.library;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -28,23 +24,35 @@ public class LoginActivity extends AppCompatActivity {
 
     private String link;
 
-    private final static String RECEIVER = "oauth2";
+    private String activity;
 
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Intent activityIntent = new Intent();
-            LoginActivity.this.setResult(intent.getIntExtra(MBaaSIntentService.OAUTH2_RESULT, Activity.RESULT_CANCELED), activityIntent);
-            LoginActivity.this.finish();
-        }
-    };
+    private Integer eventId;
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(NetworkBroadcastReceiver.EVENT_ACTIVITY, this.activity);
+        outState.putInt(NetworkBroadcastReceiver.EVENT_ID, this.eventId);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        this.activity = savedInstanceState.getString(NetworkBroadcastReceiver.EVENT_ACTIVITY);
+        this.eventId = savedInstanceState.getInt(NetworkBroadcastReceiver.EVENT_ID);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+    }
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,
-                new IntentFilter(LoginActivity.RECEIVER));
+        this.activity = getIntent().getStringExtra(NetworkBroadcastReceiver.EVENT_ACTIVITY);
+        this.eventId = getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT_ID, -1);
 
         MBaaSApplication application = null;
         if (getApplication() instanceof MBaaSApplication) {
@@ -52,10 +60,16 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         if (application == null) {
-            Intent message = new Intent(LoginActivity.RECEIVER);
-            message.putExtra(MBaaSIntentService.OAUTH2_RESULT, Activity.RESULT_CANCELED);
-            LocalBroadcastManager.getInstance(this).sendBroadcast(message);
-            return;
+            try {
+                Class<Activity> clazz = (Class<Activity>) Class.forName(LoginActivity.this.activity);
+                Intent intentActivity = new Intent(this, clazz);
+                intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intentActivity.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_FAILURE);
+                intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_MESSAGE, "sdk configuration failure");
+                intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_ID, eventId);
+                this.startActivity(intentActivity);
+            } catch (ClassNotFoundException e) {
+            }
         }
 
         String serviceAuthorize = application.getMBaaSAddress().endsWith("/") ? application.getMBaaSAddress() + "web/oauth2/authorize" : application.getMBaaSAddress() + "/web/oauth2/authorize";
@@ -75,9 +89,16 @@ public class LoginActivity extends AppCompatActivity {
                     application = (MBaaSApplication) getApplication();
                 }
                 if (application == null) {
-                    Intent message = new Intent(LoginActivity.RECEIVER);
-                    message.putExtra(MBaaSIntentService.OAUTH2_RESULT, Activity.RESULT_CANCELED);
-                    LocalBroadcastManager.getInstance(view.getContext()).sendBroadcast(message);
+                    try {
+                        Class<Activity> clazz = (Class<Activity>) Class.forName(LoginActivity.this.activity);
+                        Intent intentActivity = new Intent(view.getContext(), clazz);
+                        intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intentActivity.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_FAILURE);
+                        intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_MESSAGE, "sdk configuration failure");
+                        intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_ID, eventId);
+                        view.getContext().startActivity(intentActivity);
+                    } catch (ClassNotFoundException e) {
+                    }
                     return true;
                 }
                 if (url != null && !"".equals(url) && url.startsWith(link)) {
@@ -91,15 +112,22 @@ public class LoginActivity extends AppCompatActivity {
                         oauth2.put(name, value);
                     }
                     if (oauth2.get("error") != null && !"".equals(oauth2.get("error"))) {
-                        Intent message = new Intent(LoginActivity.RECEIVER);
-                        message.putExtra(MBaaSIntentService.OAUTH2_RESULT, Activity.RESULT_CANCELED);
-                        LocalBroadcastManager.getInstance(view.getContext()).sendBroadcast(message);
+                        try {
+                            Class<Activity> clazz = (Class<Activity>) Class.forName(LoginActivity.this.activity);
+                            Intent intentActivity = new Intent(view.getContext(), clazz);
+                            intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_UNAUTHORIZED);
+                            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_ID, eventId);
+                            view.getContext().startActivity(intentActivity);
+                        } catch (ClassNotFoundException e) {
+                        }
                     } else {
                         Intent serviceIntent = new Intent(view.getContext(), MBaaSIntentService.class);
                         serviceIntent.putExtra(MBaaSIntentService.SERVICE, MBaaSIntentService.SERVICE_ACCESS_TOKEN);
                         serviceIntent.putExtra(MBaaSIntentService.OAUTH2_CODE, oauth2.get(MBaaSIntentService.OAUTH2_CODE));
                         serviceIntent.putExtra(MBaaSIntentService.OAUTH2_STATE, oauth2.get(MBaaSIntentService.OAUTH2_STATE));
-                        serviceIntent.putExtra(MBaaSIntentService.RECEIVER, LoginActivity.RECEIVER);
+                        serviceIntent.putExtra(NetworkBroadcastReceiver.EVENT_ACTIVITY, activity);
+                        serviceIntent.putExtra(NetworkBroadcastReceiver.EVENT_ID, eventId);
                         startService(serviceIntent);
                     }
                     return true;
@@ -109,12 +137,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
         webView.loadUrl(serviceAuthorize + "?" + StringUtils.join(params, "&"));
-    }
-
-    @Override
-    protected void onDestroy() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
-        super.onDestroy();
     }
 
 }
