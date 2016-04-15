@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == 100) {
                 Application application = (Application) getApplication();
-                Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("jskhmertoday");
+                Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today");
                 responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, this));
             }
         } else if (resultCode == Activity.RESULT_CANCELED) {
