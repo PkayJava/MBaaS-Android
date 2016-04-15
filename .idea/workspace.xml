@@ -10,13 +10,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="65496daa-f4d1-43b7-ac3b-9ef1b988225d" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/angkorteam/mbaas/sdk/android/example/Application.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/angkorteam/mbaas/sdk/android/example/Application.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/library/src/main/java/com/angkorteam/mbaas/sdk/android/library/MBaaSApplication.java" afterPath="$PROJECT_DIR$/library/src/main/java/com/angkorteam/mbaas/sdk/android/library/MBaaSApplication.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/library/src/main/java/com/angkorteam/mbaas/sdk/android/library/MBaaSCallback.java" afterPath="$PROJECT_DIR$/library/src/main/java/com/angkorteam/mbaas/sdk/android/library/MBaaSCallback.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/library/src/main/java/com/angkorteam/mbaas/sdk/android/library/MBaaSClient.java" afterPath="$PROJECT_DIR$/library/src/main/java/com/angkorteam/mbaas/sdk/android/library/MBaaSClient.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/library/src/main/java/com/angkorteam/mbaas/sdk/android/library/MBaaSIntentService.java" afterPath="$PROJECT_DIR$/library/src/main/java/com/angkorteam/mbaas/sdk/android/library/MBaaSIntentService.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/angkorteam/mbaas/sdk/android/example/MainActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/angkorteam/mbaas/sdk/android/example/MainActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/library/src/main/java/com/angkorteam/mbaas/sdk/android/library/retrofit/NetworkInterceptor.java" afterPath="$PROJECT_DIR$/library/src/main/java/com/angkorteam/mbaas/sdk/android/library/retrofit/NetworkInterceptor.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="MBaaSAndroidSDK.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -48,16 +44,17 @@
       <file leaf-file-name="MainActivity.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/angkorteam/mbaas/sdk/android/example/MainActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.3321617">
-              <caret line="33" column="13" selection-start-line="33" selection-start-column="13" selection-end-line="33" selection-end-column="13" />
+            <state vertical-scroll-proportion="4.391916">
+              <caret line="147" column="53" selection-start-line="147" selection-start-column="53" selection-end-line="147" selection-end-column="53" />
               <folding>
-                <element signature="e#1490#1496#0" expanded="true" />
-                <element signature="e#3995#3996#0" expanded="true" />
-                <element signature="e#4026#4027#0" expanded="true" />
-                <element signature="e#4074#4075#0" expanded="true" />
-                <element signature="e#4107#4108#0" expanded="true" />
-                <element signature="e#7024#7829#0" expanded="true" />
-                <element signature="e#7828#7829#0" expanded="true" />
+                <element signature="imports" expanded="true" />
+                <element signature="e#1457#1463#0" expanded="true" />
+                <element signature="e#3692#3693#0" expanded="true" />
+                <element signature="e#3723#3724#0" expanded="true" />
+                <element signature="e#3771#3772#0" expanded="true" />
+                <element signature="e#3804#3805#0" expanded="true" />
+                <element signature="e#6708#7516#0" expanded="true" />
+                <element signature="e#7515#7516#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -100,11 +97,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="MBaaSClient.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/library/src/main/java/com/angkorteam/mbaas/sdk/android/library/MBaaSClient.java">
+      <file leaf-file-name="AndroidManifest.xml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="59" column="32" selection-start-line="59" selection-start-column="32" selection-end-line="59" selection-end-column="32" />
+              <caret line="8" column="66" selection-start-line="8" selection-start-column="66" selection-end-line="8" selection-end-column="66" />
               <folding />
             </state>
           </provider>
@@ -2740,8 +2737,8 @@
         <option value="$PROJECT_DIR$/app/src/main/java/com/angkorteam/mbaas/sdk/android/example/DataDetailActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/adapter/DataAdapter.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/com/angkorteam/mbaas/sdk/android/example/MainActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_data_detail.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/angkorteam/mbaas/sdk/android/example/MainActivity.java" />
       </list>
     </option>
   </component>
@@ -2962,6 +2959,10 @@
             <PATH_ELEMENT>
               <option name="myItemId" value="app" />
               <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="manifests" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidManifestsGroupNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -3376,18 +3377,27 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="8" column="66" selection-start-line="8" selection-start-column="66" selection-end-line="8" selection-end-column="66" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/angkorteam/mbaas/sdk/android/example/MainActivity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3321617">
-          <caret line="33" column="13" selection-start-line="33" selection-start-column="13" selection-end-line="33" selection-end-column="13" />
+        <state vertical-scroll-proportion="4.391916">
+          <caret line="147" column="53" selection-start-line="147" selection-start-column="53" selection-end-line="147" selection-end-column="53" />
           <folding>
-            <element signature="e#1490#1496#0" expanded="true" />
-            <element signature="e#3995#3996#0" expanded="true" />
-            <element signature="e#4026#4027#0" expanded="true" />
-            <element signature="e#4074#4075#0" expanded="true" />
-            <element signature="e#4107#4108#0" expanded="true" />
-            <element signature="e#7024#7829#0" expanded="true" />
-            <element signature="e#7828#7829#0" expanded="true" />
+            <element signature="imports" expanded="true" />
+            <element signature="e#1457#1463#0" expanded="true" />
+            <element signature="e#3692#3693#0" expanded="true" />
+            <element signature="e#3723#3724#0" expanded="true" />
+            <element signature="e#3771#3772#0" expanded="true" />
+            <element signature="e#3804#3805#0" expanded="true" />
+            <element signature="e#6708#7516#0" expanded="true" />
+            <element signature="e#7515#7516#0" expanded="true" />
           </folding>
         </state>
       </provider>

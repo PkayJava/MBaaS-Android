@@ -169,11 +169,11 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
                     public void onLoadMore() {
 
                         dataList.add(null);
-                        adapter.notifyItemInserted(dataList.size() -1);
+                        adapter.notifyItemInserted(dataList.size() - 1);
 
                         requestCounter++;
                         Map<String, Object> params = new HashMap<>();
-                        params.put("offset", 10*requestCounter);
+                        params.put("offset", 10 * requestCounter);
 
                         Application application = (Application) getApplication();
                         Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today", params);
