@@ -1,6 +1,7 @@
 package com.angkorteam.mbaas.sdk.android.library;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
@@ -27,6 +28,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
+import bolts.Task;
+import okhttp3.Cache;
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -55,20 +58,24 @@ public class MBaaSClient {
         this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
         this.gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ").create();
-
-//        HttpLoggingInterceptor logger = new HttpLoggingInterceptor();
-//        logger.setLevel(HttpLoggingInterceptor.Level.BODY);
+        Cache cache = new Cache(application.getCacheDir(), application.getCacheSize());
         OkHttpClient httpClient = new OkHttpClient.Builder()
-                // .addInterceptor(logger)
-                .addNetworkInterceptor(new NetworkInterceptor(this.sharedPreferences, this.application.getMBaaSClientId(), this.application.getMBaaSClientSecret(), this.application.getMBaaSAppVersion(), SDK_VERSION, System.getProperty("http.agent")))
+                .addInterceptor(new NetworkInterceptor(this.sharedPreferences, this.application.getMBaaSClientId(), this.application.getMBaaSClientSecret(), this.application.getMBaaSAppVersion(), SDK_VERSION))
+                .cache(cache)
                 .build();
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(this.application.getMBaaSAddress())
+                .callbackExecutor(Task.BACKGROUND_EXECUTOR)
                 .addConverterFactory(GsonConverterFactory.create(this.gson))
                 .client(httpClient)
                 .callbackExecutor(Executors.newFixedThreadPool(5))
                 .build();
         this.service = retrofit.create(IService.class);
+
+        Intent intent = new Intent(context, MBaaSIntentService.class);
+        intent.putExtra(MBaaSIntentService.SERVICE, MBaaSIntentService.SERVICE_GCM_TOKEN);
+        intent.putExtra(MBaaSIntentService.SENDER_ID, application.getSenderId());
+        context.startService(intent);
     }
 
     public Call<OAuth2AuthorizeResponse> oauth2Authorize(String state, String code) {
