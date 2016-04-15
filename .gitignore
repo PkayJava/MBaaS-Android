@@ -11,4 +11,11 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
-build/
+/library/library.iml
+/library/build
+/build
+/app/app.iml
+/app/build
+/.idea
+/.gradle
+/MBaaS-Android-SDK.iml
