@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.angkorteam.mbaas.sdk.android.library.MBaaSCallback;
@@ -13,6 +15,7 @@ import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptEx
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +29,8 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
     public static final String TAG = "MBaaS";
 
     private TextView mInformationTextView;
+
+    private ListView listView;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -47,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
 
         setContentView(R.layout.activity_main);
         mInformationTextView = (TextView) findViewById(R.id.informationTextView);
+
+        listView = (ListView) findViewById(R.id.listView);
 
         Application application = (Application) getApplication();
         Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("jskhmertoday");
@@ -106,7 +113,13 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
         if (operationId == 100) {
             JavaScriptExecuteResponse response = (JavaScriptExecuteResponse) object;
             if (response.getHttpCode() == 200) {
-                List<Map<String, Object>> test = (List<Map<String, Object>>) response.getData().getBody();
+                List<Map<String, Object>> test = (List<Map<String, Object>>) response.getData();
+                List<String> titles = new ArrayList<>();
+                for (Map<String, Object> t : test) {
+                    titles.add((String) t.get("title"));
+                }
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, titles);
+                listView.setAdapter(adapter);
                 mInformationTextView.setText((String) test.get(0).get("title"));
             } else {
                 mInformationTextView.setText(response.getResult());

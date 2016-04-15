@@ -21,14 +21,23 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.2.1'
+
+    compile 'com.android.support:appcompat-v7:23.3.0'
     compile 'com.google.android.gms:play-services-gcm:8.4.0'
     compile 'com.squareup.retrofit2:retrofit:2.0.1'
     compile 'com.squareup.retrofit2:converter-gson:2.0.1'
     compile 'com.google.code.gson:gson:2.6.2'
     compile 'com.squareup.okio:okio:1.6.0'
+
     compile 'com.squareup.okhttp3:logging-interceptor:3.2.0'
     compile 'com.squareup.okhttp3:okhttp:3.2.0'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'commons-io:commons-io:2.4'
+
+    // provided 'com.facebook.android:facebook-android-sdk:4.9.0'
+    // provided 'com.parse:parsefacebookutils-v4-android:1.10.4@aar'
+    // provided 'com.parse:parsetwitterutils-android:1.10.4'
+    // compile 'com.android.support:support-v4:23.3.0'
+    // compile 'com.squareup.okhttp:okhttp:2.7.5'
+    // compile 'org.apache.httpcomponents:httpclient:4.5.2'
 }

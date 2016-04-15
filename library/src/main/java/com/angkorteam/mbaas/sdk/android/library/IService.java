@@ -3,7 +3,6 @@ package com.angkorteam.mbaas.sdk.android.library;
 import com.angkorteam.mbaas.sdk.android.library.request.asset.AssetCreateRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.device.DeviceRegisterRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.file.FileCreateRequest;
-import com.angkorteam.mbaas.sdk.android.library.request.javascript.JavaScriptExecuteRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.oauth2.OAuth2RefreshRequest;
 import com.angkorteam.mbaas.sdk.android.library.response.asset.AssetCreateResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.asset.AssetDeleteResponse;
@@ -18,17 +17,13 @@ import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2AuthorizeR
 import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2RefreshResponse;
 
 import java.util.Map;
-import java.util.Objects;
 
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.Field;
-import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
-import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
@@ -61,7 +56,7 @@ public interface IService {
     public Call<OAuth2RefreshResponse> oauth2Refresh(@Body OAuth2RefreshRequest request);
 
     @POST("api/javascript/execute/{script}")
-    public Call<JavaScriptExecuteResponse> javascriptExecutePost(@Path("script") String script, @Body JavaScriptExecuteRequest request);
+    public Call<JavaScriptExecuteResponse> javascriptExecutePost(@Path("script") String script, @Body Map<String, Object> request);
 
     @GET("api/javascript/execute/{script}")
     public Call<JavaScriptExecuteResponse> javascriptExecuteGet(@Path("script") String script);
@@ -73,7 +68,7 @@ public interface IService {
     public Call<JavaScriptExecuteResponse> javascriptExecutePut(@Path("script") String script);
 
     @PUT("api/javascript/execute/{script}")
-    public Call<JavaScriptExecuteResponse> javascriptExecutePut(@Path("script") String script, @Body JavaScriptExecuteRequest request);
+    public Call<JavaScriptExecuteResponse> javascriptExecutePut(@Path("script") String script, @Body Map<String, Object> request);
 
     @POST("api/file/create/{filename}")
     public Call<FileCreateResponse> fileCreate(@Path(value = "filename", encoded = false) String filename, @Body FileCreateRequest request);

@@ -16,4 +16,10 @@
         android:text="@string/registering_message"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/listView"
+        android:layout_gravity="center_horizontal" />
+
 </LinearLayout>

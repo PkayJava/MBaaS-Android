@@ -7,7 +7,6 @@ import android.preference.PreferenceManager;
 import com.angkorteam.mbaas.sdk.android.library.request.asset.AssetCreateRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.device.DeviceRegisterRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.file.FileCreateRequest;
-import com.angkorteam.mbaas.sdk.android.library.request.javascript.JavaScriptExecuteRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.oauth2.OAuth2RefreshRequest;
 import com.angkorteam.mbaas.sdk.android.library.response.asset.AssetCreateResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.asset.AssetDeleteResponse;
@@ -99,11 +98,10 @@ public class MBaaSClient {
     }
 
     public Call<JavaScriptExecuteResponse> javascriptExecutePost(String script) {
-        JavaScriptExecuteRequest request = new JavaScriptExecuteRequest();
-        return this.service.javascriptExecutePost(script, request);
+        return this.service.javascriptExecutePost(script, new HashMap<String, Object>());
     }
 
-    public Call<JavaScriptExecuteResponse> javascriptExecutePost(String script, JavaScriptExecuteRequest request) {
+    public Call<JavaScriptExecuteResponse> javascriptExecutePost(String script, Map<String, Object> request) {
         return this.service.javascriptExecutePost(script, request);
     }
 
@@ -119,7 +117,7 @@ public class MBaaSClient {
         return this.service.javascriptExecutePut(script);
     }
 
-    public Call<JavaScriptExecuteResponse> javascriptExecutePut(String script, JavaScriptExecuteRequest request) {
+    public Call<JavaScriptExecuteResponse> javascriptExecutePut(String script, Map<String, Object> request) {
         return this.service.javascriptExecutePut(script, request);
     }
 
