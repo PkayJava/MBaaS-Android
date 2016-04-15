@@ -32,8 +32,6 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     public static final String TAG = "MBaaS";
 
-    private TextView mInformationTextView;
-
     private RecyclerView recyclerView;
     private LinearLayoutManager linearLayoutManager;
     private DataAdapter adapter;
@@ -51,7 +49,6 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, new IntentFilter(broadcastReceiver.getUuid()));
 
         setContentView(R.layout.activity_main);
-        mInformationTextView = (TextView) findViewById(R.id.informationTextView);
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         linearLayoutManager = new LinearLayoutManager(this);
@@ -117,60 +114,54 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
         if (operationId == 100) {
             Gson gson = new Gson();
             JavaScriptExecuteResponse response = gson.fromJson(json, JavaScriptExecuteResponse.class);
-            if (response.getHttpCode() == 200) {
-                List<Map<String, Object>> test = (List<Map<String, Object>>) response.getData();
-                List<String> titles = new ArrayList<>();
+            List<Map<String, Object>> test = (List<Map<String, Object>>) response.getData();
 
-                if (requestCounter == 0) {
-                    for (Map<String, Object> t : test) {
-                        data = new Data();
-                        data.setTitle("" + t.get("title"));
-                        data.setDescription("" + t.get("description"));
-                        data.setMediaImage("" + t.get("media_image"));
-                        data.setMediaMp3("" + t.get("media_mp3"));
-                        data.setMediaVideo("" + t.get("media_video"));
-                        dataList.add(data);
-                    }
-
-                    adapter = new DataAdapter(MainActivity.this, dataList, recyclerView);
-                    recyclerView.setAdapter(adapter);
-                } else {
-                    dataList.remove(dataList.size() - 1);
-                    adapter.notifyItemRemoved(dataList.size());
-
-                    for (Map<String, Object> t : test) {
-                        data = new Data();
-                        data.setTitle("" + t.get("title"));
-                        data.setDescription("" + t.get("description"));
-                        data.setMediaImage("" + t.get("media_image"));
-                        data.setMediaMp3("" + t.get("media_mp3"));
-                        data.setMediaVideo("" + t.get("media_video"));
-                        dataList.add(data);
-                    }
-                    adapter.notifyDataSetChanged();
-                    adapter.setLoaded();
+            if (requestCounter == 0) {
+                for (Map<String, Object> t : test) {
+                    data = new Data();
+                    data.setTitle("" + t.get("title"));
+                    data.setDescription("" + t.get("description"));
+                    data.setMediaImage("" + t.get("media_image"));
+                    data.setMediaMp3("" + t.get("media_mp3"));
+                    data.setMediaVideo("" + t.get("media_video"));
+                    dataList.add(data);
                 }
-                //mInformationTextView.setText((String) test.get(0).get("title"));
-                adapter.setOnLoadMoreListener(new OnLoadMoreListener() {
-                    @Override
-                    public void onLoadMore() {
 
-                        dataList.add(null);
-                        adapter.notifyItemInserted(dataList.size() - 1);
-
-                        requestCounter++;
-                        Map<String, Object> params = new HashMap<>();
-                        params.put("offset", 10 * requestCounter);
-
-                        Application application = (Application) getApplication();
-                        Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today", params);
-                        responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, MainActivity.this, broadcastReceiver));
-                    }
-                });
-
+                adapter = new DataAdapter(MainActivity.this, dataList, recyclerView);
+                recyclerView.setAdapter(adapter);
             } else {
-                mInformationTextView.setText(response.getResult());
+                dataList.remove(dataList.size() - 1);
+                adapter.notifyItemRemoved(dataList.size());
+
+                for (Map<String, Object> t : test) {
+                    data = new Data();
+                    data.setTitle("" + t.get("title"));
+                    data.setDescription("" + t.get("description"));
+                    data.setMediaImage("" + t.get("media_image"));
+                    data.setMediaMp3("" + t.get("media_mp3"));
+                    data.setMediaVideo("" + t.get("media_video"));
+                    dataList.add(data);
+                }
+                adapter.notifyDataSetChanged();
+                adapter.setLoaded();
             }
+
+            adapter.setOnLoadMoreListener(new OnLoadMoreListener() {
+                @Override
+                public void onLoadMore() {
+
+                    dataList.add(null);
+                    adapter.notifyItemInserted(dataList.size() - 1);
+
+                    requestCounter++;
+                    Map<String, Object> params = new HashMap<>();
+                    params.put("offset", 10 * requestCounter);
+
+                    Application application = (Application) getApplication();
+                    Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today", params);
+                    responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, MainActivity.this, broadcastReceiver));
+                }
+            });
         }
     }
 
