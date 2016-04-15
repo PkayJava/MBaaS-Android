@@ -58,6 +58,7 @@ public class MBaaSIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        Log.i("MBaaS", "Service " + intent.getStringExtra(MBaaSIntentService.SERVICE));
         MBaaSApplication application = null;
         if (getApplication() instanceof MBaaSApplication) {
             application = (MBaaSApplication) getApplication();
@@ -133,7 +134,6 @@ public class MBaaSIntentService extends IntentService {
                 sharedPreferences.edit().putString(MBaaSIntentService.ACCESS_TOKEN, responseBody.getData().getAccessToken()).apply();
                 // Subscribe to topic channels
                 subscribeTopics(token);
-                Log.d("sender", "Broadcasting message");
             } catch (Throwable e) {
                 sharedPreferences.edit().putString(MBaaSIntentService.ACCESS_TOKEN, "").apply();
             }

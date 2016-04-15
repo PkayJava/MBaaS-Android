@@ -1,5 +1,6 @@
 package com.angkorteam.mbaas.sdk.android.library;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -29,4 +30,7 @@ public interface MBaaSApplication {
 
     public String getMBaaSAppVersion();
 
+    public File getCacheDir();
+
+    public long getCacheSize();
 }

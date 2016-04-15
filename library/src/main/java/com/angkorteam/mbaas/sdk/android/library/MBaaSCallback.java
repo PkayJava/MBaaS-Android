@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2RefreshResponse;
 
@@ -31,6 +32,10 @@ public class MBaaSCallback<T extends Response> implements Callback<T> {
 
     @Override
     public final void onResponse(final Call<T> call, final retrofit2.Response<T> response) {
+        final int networkCode = response.code();
+        if (networkCode == 500) {
+            Log.i("MBaaS", "network code " + networkCode);
+        }
         if (response.body() != null) {
             final T body = response.body();
             if (body != null) {

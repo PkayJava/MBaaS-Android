@@ -16,14 +16,13 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity implements Callback<JavaScriptExecuteResponse>, MBaaSOperation {
+public class MainActivity extends AppCompatActivity implements MBaaSOperation {
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     public static final String TAG = "MBaaS";
@@ -56,19 +55,16 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
         listView = (ListView) findViewById(R.id.listView);
 
         Application application = (Application) getApplication();
-        Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("offset", 0);
+
+        Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today", params);
         responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, this));
-    }
 
-    @Override
-    public void onResponse(Call<JavaScriptExecuteResponse> call, Response<JavaScriptExecuteResponse> response) {
-        JavaScriptExecuteResponse responseBody = response.body();
-        Log.i("MBaaS", responseBody.getMethod());
-    }
 
-    @Override
-    public void onFailure(Call<JavaScriptExecuteResponse> call, Throwable t) {
-
+        Call<JavaScriptExecuteResponse> responseCall1 = application.getMBaaSClient().javascriptExecuteGet("query_khmer_today_total");
+        responseCall1.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(101, this, this));
     }
 
     @Override
@@ -110,19 +106,24 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
 
     @Override
     public void operationResponse(int operationId, Object object) {
-        if (operationId == 100) {
-            JavaScriptExecuteResponse response = (JavaScriptExecuteResponse) object;
-            if (response.getHttpCode() == 200) {
-                List<Map<String, Object>> test = (List<Map<String, Object>>) response.getData();
-                List<String> titles = new ArrayList<>();
-                for (Map<String, Object> t : test) {
-                    titles.add((String) t.get("title"));
+        JavaScriptExecuteResponse response = (JavaScriptExecuteResponse) object;
+        if (response != null) {
+            if (operationId == 100) {
+                if (response.getHttpCode() == 200) {
+                    List<Map<String, Object>> test = (List<Map<String, Object>>) response.getData();
+                    List<String> titles = new ArrayList<>();
+                    for (Map<String, Object> t : test) {
+                        titles.add((String) t.get("title"));
+                    }
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, titles);
+                    listView.setAdapter(adapter);
+                    mInformationTextView.setText((String) test.get(0).get("title"));
+                } else {
+                    mInformationTextView.setText(response.getResult());
                 }
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, titles);
-                listView.setAdapter(adapter);
-                mInformationTextView.setText((String) test.get(0).get("title"));
-            } else {
-                mInformationTextView.setText(response.getResult());
+            } else if (operationId == 101) {
+                Number number = (Number) response.getData();
+                Log.i("MBaaS", "total " + number);
             }
         }
     }
