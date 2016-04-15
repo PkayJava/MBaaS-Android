@@ -4,9 +4,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.angkorteam.mbaas.sdk.android.library.MBaaSCallback;
@@ -16,12 +16,17 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import Module.Data;
+import adapter.DataAdapter;
+import interfaces.OnLoadMoreListener;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import utils.DividerItemDecoration;
 
 public class MainActivity extends AppCompatActivity implements Callback<JavaScriptExecuteResponse>, MBaaSOperation {
 
@@ -30,7 +35,13 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
 
     private TextView mInformationTextView;
 
-    private ListView listView;
+    private RecyclerView recyclerView;
+    private LinearLayoutManager linearLayoutManager;
+    private DataAdapter adapter;
+    private Data data;
+    private List<Data> dataList = new ArrayList<Data>();
+    private int requestCounter = 0;
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -53,10 +64,16 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
         setContentView(R.layout.activity_main);
         mInformationTextView = (TextView) findViewById(R.id.informationTextView);
 
-        listView = (ListView) findViewById(R.id.listView);
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        linearLayoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
 
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("offset", 0);
         Application application = (Application) getApplication();
-        Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today");
+        Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today", params);
         responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, this));
     }
 
@@ -115,12 +132,55 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
             if (response.getHttpCode() == 200) {
                 List<Map<String, Object>> test = (List<Map<String, Object>>) response.getData();
                 List<String> titles = new ArrayList<>();
-                for (Map<String, Object> t : test) {
-                    titles.add((String) t.get("title"));
+
+                if(requestCounter == 0){
+                    for (Map<String, Object> t : test) {
+                        data = new Data();
+                        data.setTitle("" + t.get("title"));
+                        data.setDescription("" + t.get("description"));
+                        data.setMediaImage("" + t.get("media_image"));
+                        data.setMediaMp3("" + t.get("media_mp3"));
+                        data.setMediaVideo("" + t.get("media_video"));
+                        dataList.add(data);
+                    }
+
+                    adapter = new DataAdapter(MainActivity.this, dataList, recyclerView);
+                    recyclerView.setAdapter(adapter);
                 }
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, titles);
-                listView.setAdapter(adapter);
-                mInformationTextView.setText((String) test.get(0).get("title"));
+                else{
+                    dataList.remove(dataList.size() - 1);
+                    adapter.notifyItemRemoved(dataList.size());
+
+                    for (Map<String, Object> t : test) {
+                        data = new Data();
+                        data.setTitle("" + t.get("title"));
+                        data.setDescription("" + t.get("description"));
+                        data.setMediaImage("" + t.get("media_image"));
+                        data.setMediaMp3("" + t.get("media_mp3"));
+                        data.setMediaVideo("" + t.get("media_video"));
+                        dataList.add(data);
+                    }
+                    adapter.notifyDataSetChanged();
+                    adapter.setLoaded();
+                }
+                //mInformationTextView.setText((String) test.get(0).get("title"));
+                adapter.setOnLoadMoreListener(new OnLoadMoreListener() {
+                    @Override
+                    public void onLoadMore() {
+
+                        dataList.add(null);
+                        adapter.notifyItemInserted(dataList.size() -1);
+
+                        requestCounter++;
+                        Map<String, Object> params = new HashMap<>();
+                        params.put("offset", 10*requestCounter);
+
+                        Application application = (Application) getApplication();
+                        Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today", params);
+                        responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, MainActivity.this, MainActivity.this));
+                    }
+                });
+
             } else {
                 mInformationTextView.setText(response.getResult());
             }

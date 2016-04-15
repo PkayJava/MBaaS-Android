@@ -7,8 +7,8 @@
     <!-- [START gcm_permission] -->
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <!-- [END gcm_permission] -->
 
+    <!-- [END gcm_permission] -->
     <application
         android:name=".Application"
         android:allowBackup="true"
@@ -26,7 +26,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name="com.angkorteam.mbaas.sdk.android.library.LoginActivity"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
@@ -38,10 +37,12 @@
             android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+
                 <category android:name="com.angkorteam.mbaas.sdk.android.example" />
             </intent-filter>
         </receiver>
         <!-- [END gcm_receiver] -->
+
 
         <!-- [START gcm_listener] -->
         <service
@@ -53,12 +54,14 @@
         </service>
         <!-- [END gcm_listener] -->
 
+
         <!-- [START instanceId_listener] -->
         <!-- [END instanceId_listener] -->
         <service
             android:name="com.angkorteam.mbaas.sdk.android.library.MBaaSIntentService"
             android:exported="false" />
 
+        <activity android:name=".DataDetailActivity"></activity>
     </application>
 
 </manifest>
