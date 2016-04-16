@@ -1,14 +1,21 @@
 package com.angkorteam.mbaas.sdk.android.library;
 
 import android.app.Activity;
+import android.graphics.PorterDuff;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptPaginationResponse;
 import com.google.gson.Gson;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -18,7 +25,7 @@ import retrofit2.Call;
 /**
  * Created by socheat on 4/16/16.
  */
-public abstract class MBaaSAdapter extends RecyclerView.Adapter implements NetworkBroadcastReceiver.NetworkReceiver {
+public abstract class MBaaSAdapter<T extends RecyclerView.ViewHolder> extends RecyclerView.Adapter implements NetworkBroadcastReceiver.NetworkReceiver {
 
     public static final int VIEW_ITEM = 1;
     public static final int VIEW_PROGRESS = 0;
@@ -45,6 +52,8 @@ public abstract class MBaaSAdapter extends RecyclerView.Adapter implements Netwo
 
     private final RecyclerView recyclerView;
 
+    private final int resourceId;
+
     private final RecyclerView.OnScrollListener scrollListener = new RecyclerView.OnScrollListener() {
         @Override
         public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -57,8 +66,9 @@ public abstract class MBaaSAdapter extends RecyclerView.Adapter implements Netwo
         }
     };
 
-    public MBaaSAdapter(Activity activity, NetworkBroadcastReceiver broadcastReceiver, String javascript, RecyclerView recyclerView) {
+    public MBaaSAdapter(Activity activity, int resourceId, NetworkBroadcastReceiver broadcastReceiver, String javascript, RecyclerView recyclerView) {
         this.activity = activity;
+        this.resourceId = resourceId;
         this.javascript = javascript;
         this.broadcastReceiver = broadcastReceiver;
         this.broadcastReceiver.setNetworkReceiver(this);
@@ -85,17 +95,43 @@ public abstract class MBaaSAdapter extends RecyclerView.Adapter implements Netwo
     }
 
     @Override
-    public int getItemViewType(int position) {
-        Log.i("MBaaS", "position " + position);
+    public final RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        RecyclerView.ViewHolder holder;
+        if (viewType == MBaaSAdapter.VIEW_ITEM) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(this.resourceId, parent, false);
+            holder = onCreateViewHolder(view);
+        } else {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycler_progress, parent, false);
+            holder = new ProgressViewHolder(view);
+        }
+        return holder;
+    }
+
+    protected abstract T onCreateViewHolder(View view);
+
+    @Override
+    public final void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        if (holder instanceof ProgressViewHolder) {
+            ((ProgressViewHolder) holder).getProgressBar().getIndeterminateDrawable().setColorFilter(this.activity.getResources().getColor(android.support.v7.appcompat.R.color.background_floating_material_light), PorterDuff.Mode.SRC_IN);
+            ((ProgressViewHolder) holder).progressBar.setIndeterminate(true);
+        } else {
+            onPopulateItem((T) holder, position, getItem(position));
+        }
+    }
+
+    protected abstract void onPopulateItem(T holder, int position, Map<String, Object> item);
+
+    @Override
+    public final int getItemViewType(int position) {
         return this.items.get(position) != null ? VIEW_ITEM : VIEW_PROGRESS;
     }
 
     @Override
-    public int getItemCount() {
+    public final int getItemCount() {
         return this.items.size();
     }
 
-    public Map<String, Object> getItem(int position) {
+    protected final Map<String, Object> getItem(int position) {
         return this.items.get(position);
     }
 
@@ -106,8 +142,7 @@ public abstract class MBaaSAdapter extends RecyclerView.Adapter implements Netwo
      * @param newState     The updated scroll state. One of {@link RecyclerView#SCROLL_STATE_IDLE},
      *                     {@link RecyclerView#SCROLL_STATE_DRAGGING} or {@link RecyclerView#SCROLL_STATE_SETTLING}.
      */
-    public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-
+    public final void onScrollStateChanged(RecyclerView recyclerView, int newState) {
     }
 
     /**
@@ -121,8 +156,7 @@ public abstract class MBaaSAdapter extends RecyclerView.Adapter implements Netwo
      * @param dx           The amount of horizontal scroll.
      * @param dy           The amount of vertical scroll.
      */
-    public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-
+    public final void onScrolled(RecyclerView recyclerView, int dx, int dy) {
         if (this.layoutManager != null) {
             totalItemCount = this.layoutManager.getItemCount();
             lastVisibleItem = this.layoutManager.findLastVisibleItemPosition();
@@ -130,7 +164,6 @@ public abstract class MBaaSAdapter extends RecyclerView.Adapter implements Netwo
             if (!loading && totalItemCount <= (lastVisibleItem + visibleThreshold)) {
                 // End has been reached
                 // Do something
-
                 if (hasMore) {
                     loadMore();
                 }
@@ -139,10 +172,9 @@ public abstract class MBaaSAdapter extends RecyclerView.Adapter implements Netwo
         }
     }
 
-    protected void loadMore() {
-
+    private void loadMore() {
         items.put(items.size(), null);
-        this.notifyItemInserted(items.size()-1);
+        this.notifyItemInserted(items.size() - 1);
         MBaaSApplication application = null;
         if (activity.getApplicationContext() instanceof MBaaSApplication) {
             application = (MBaaSApplication) activity.getApplicationContext();
@@ -172,7 +204,7 @@ public abstract class MBaaSAdapter extends RecyclerView.Adapter implements Netwo
             recyclerView.setAdapter(this);
         } else if (eventId == EVENT_LOAD_MORE) {
 
-            items.remove(items.size()-1);
+            items.remove(items.size() - 1);
             this.notifyItemRemoved(items.size());
             JavaScriptPaginationResponse response = gson.fromJson(json, JavaScriptPaginationResponse.class);
             this.pageNumber = response.getData().getPageNumber();
@@ -194,5 +226,19 @@ public abstract class MBaaSAdapter extends RecyclerView.Adapter implements Netwo
     @Override
     public void onUnauthorized(int operationId) {
 
+    }
+
+    private static final class ProgressViewHolder extends RecyclerView.ViewHolder {
+
+        private final ProgressBar progressBar;
+
+        public ProgressViewHolder(View v) {
+            super(v);
+            progressBar = (ProgressBar) v.findViewById(R.id.progress_bar);
+        }
+
+        public ProgressBar getProgressBar() {
+            return progressBar;
+        }
     }
 }

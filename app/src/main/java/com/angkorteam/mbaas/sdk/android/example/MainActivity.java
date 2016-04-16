@@ -2,36 +2,25 @@ package com.angkorteam.mbaas.sdk.android.example;
 
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.angkorteam.mbaas.sdk.android.library.MBaaSAdapter;
-import com.angkorteam.mbaas.sdk.android.library.MBaaSCallback;
 import com.angkorteam.mbaas.sdk.android.library.NetworkBroadcastReceiver;
-import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import Module.Data;
-import adapter.DataAdapter;
-import interfaces.OnLoadMoreListener;
-import retrofit2.Call;
 import utils.DividerItemDecoration;
 
 public class MainActivity extends AppCompatActivity implements NetworkBroadcastReceiver.NetworkReceiver {
@@ -49,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
     private NetworkBroadcastReceiver broadcastReceiver = null;
     private NetworkBroadcastReceiver mbaasAdapterBroadcastReceiver = null;
 
-    private MBaaSAdapter mbaasAdapter = null;
+    private MBaaSAdapter<DataViewHolder> mbaasAdapter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,35 +66,17 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
 
         }
 
-        mbaasAdapter = new MBaaSAdapter(this, this.mbaasAdapterBroadcastReceiver, "js_khmer_today", recyclerView) {
+        mbaasAdapter = new MBaaSAdapter<DataViewHolder>(this, R.layout.data_row, this.mbaasAdapterBroadcastReceiver, "js_khmer_today", recyclerView) {
             @Override
-            public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                RecyclerView.ViewHolder vh;
-
-                Log.i("zz", "position : "+viewType);
-
-                if (viewType == MBaaSAdapter.VIEW_ITEM) {
-                    View v = LayoutInflater.from(parent.getContext()).inflate(
-                            R.layout.data_row, parent, false);
-                    vh = new DataViewHolder(v);
-                } else {
-                    View v = LayoutInflater.from(parent.getContext()).inflate(
-                            R.layout.recycler_progress, parent, false);
-                    vh = new ProgressViewHolder(v);
-                }
-                return vh;
+            protected void onPopulateItem(DataViewHolder holder, int position, Map<String, Object> item) {
+                String title = (String) item.get("title");
+                String text = position + " : " + title;
+                holder.tvTitle.setText(text);
             }
 
             @Override
-            public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-                if (holder instanceof DataViewHolder) {
-                    ((DataViewHolder) holder).tvTitle.setText(position+" : "+mbaasAdapter.getItem(position)+"");
-
-
-                } else {
-                    ((ProgressViewHolder) holder).progressBar.getIndeterminateDrawable().setColorFilter(MainActivity.this.getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_IN);
-                    ((ProgressViewHolder) holder).progressBar.setIndeterminate(true);
-                }
+            protected DataViewHolder onCreateViewHolder(View view) {
+                return new DataViewHolder(view);
             }
         };
     }
@@ -150,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
         return true;
     }
 
-    public class DataViewHolder extends RecyclerView.ViewHolder {
+    public static class DataViewHolder extends RecyclerView.ViewHolder {
         private TextView tvTitle;
 
         public DataViewHolder(View v) {
@@ -160,24 +131,15 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
 
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(MainActivity.this, DataDetailActivity.class);
-                    intent.putExtra("title", "" + dataList.get(getPosition()).getTitle());
-                    intent.putExtra("description", "" + dataList.get(getPosition()).getDescription());
-                    intent.putExtra("mp3", "" + dataList.get(getPosition()).getMediaMp3());
-                    intent.putExtra("image", "" + dataList.get(getPosition()).getMediaImage());
-                    intent.putExtra("video", "" + dataList.get(getPosition()).getMediaVideo());
-                    MainActivity.this.startActivity(intent);
+//                    Intent intent = new Intent(MainActivity.this, DataDetailActivity.class);
+//                    intent.putExtra("title", "" + dataList.get(getPosition()).getTitle());
+//                    intent.putExtra("description", "" + dataList.get(getPosition()).getDescription());
+//                    intent.putExtra("mp3", "" + dataList.get(getPosition()).getMediaMp3());
+//                    intent.putExtra("image", "" + dataList.get(getPosition()).getMediaImage());
+//                    intent.putExtra("video", "" + dataList.get(getPosition()).getMediaVideo());
+//                    MainActivity.this.startActivity(intent);
                 }
             });
-        }
-    }
-
-    public class ProgressViewHolder extends RecyclerView.ViewHolder {
-        public ProgressBar progressBar;
-
-        public ProgressViewHolder(View v) {
-            super(v);
-            progressBar = (ProgressBar) v.findViewById(R.id.progressBar);
         }
     }
 
