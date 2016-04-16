@@ -180,68 +180,16 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
 
 
     @Override
-    public void onResponse(int operationId, String json) {
-//        if (operationId == 100) {
-//            Gson gson = new Gson();
-//            JavaScriptExecuteResponse response = gson.fromJson(json, JavaScriptExecuteResponse.class);
-//            List<Map<String, Object>> test = (List<Map<String, Object>>) response.getData();
-//
-//            if (requestCounter == 0) {
-//                for (Map<String, Object> t : test) {
-//                    data = new Data();
-//                    data.setTitle("" + t.get("title"));
-//                    data.setDescription("" + t.get("description"));
-//                    data.setMediaImage("" + t.get("media_image"));
-//                    data.setMediaMp3("" + t.get("media_mp3"));
-//                    data.setMediaVideo("" + t.get("media_video"));
-//                    dataList.add(data);
-//                }
-//
-//                adapter = new DataAdapter(MainActivity.this, dataList, recyclerView);
-//                recyclerView.setAdapter(adapter);
-//            } else {
-//                dataList.remove(dataList.size() - 1);
-//                adapter.notifyItemRemoved(dataList.size());
-//
-//                for (Map<String, Object> t : test) {
-//                    data = new Data();
-//                    data.setTitle("" + t.get("title"));
-//                    data.setDescription("" + t.get("description"));
-//                    data.setMediaImage("" + t.get("media_image"));
-//                    data.setMediaMp3("" + t.get("media_mp3"));
-//                    data.setMediaVideo("" + t.get("media_video"));
-//                    dataList.add(data);
-//                }
-//                adapter.notifyDataSetChanged();
-//                adapter.setLoaded();
-//            }
-//
-//            adapter.setOnLoadMoreListener(new OnLoadMoreListener() {
-//                @Override
-//                public void onLoadMore() {
-//
-//                    dataList.add(null);
-//                    adapter.notifyItemInserted(dataList.size() - 1);
-//
-//                    requestCounter++;
-//                    Map<String, Object> params = new HashMap<>();
-//                    params.put("offset", 10 * requestCounter);
-//
-//                    Application application = (Application) getApplication();
-//                    Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today", params);
-//                    responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, MainActivity.this, broadcastReceiver));
-//                }
-//            });
-//        }
+    public void onResponse(int eventId, String json) {
     }
 
     @Override
-    public void onFailure(int operationId, String message) {
-        Log.i("MBaaS", "onFailure " + operationId);
+    public void onFailure(int eventId, String message) {
+        Log.i("MBaaS", "onFailure " + eventId);
     }
 
     @Override
-    public void onUnauthorized(int operationId) {
-        Log.i("MBaaS", "onUnauthorized " + operationId);
+    public void onUnauthorized(int eventId) {
+        Log.i("MBaaS", "onUnauthorized " + eventId);
     }
 }
