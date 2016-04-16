@@ -1,6 +1,5 @@
 package com.angkorteam.mbaas.sdk.android.example;
 
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
@@ -16,12 +15,7 @@ import com.angkorteam.mbaas.sdk.android.library.NetworkBroadcastReceiver;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-
-import Module.Data;
-import utils.DividerItemDecoration;
 
 public class MainActivity extends AppCompatActivity implements NetworkBroadcastReceiver.NetworkReceiver {
 
@@ -30,10 +24,6 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
 
     private RecyclerView recyclerView;
     private LinearLayoutManager linearLayoutManager;
-    //    private DataAdapter adapter;
-    private Data data;
-    private List<Data> dataList = new ArrayList<Data>();
-    private int requestCounter = 0;
 
     private NetworkBroadcastReceiver broadcastReceiver = null;
     private NetworkBroadcastReceiver mbaasAdapterBroadcastReceiver = null;

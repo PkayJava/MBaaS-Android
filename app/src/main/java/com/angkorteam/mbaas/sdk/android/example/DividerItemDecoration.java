@@ -1,4 +1,4 @@
-package utils;
+package com.angkorteam.mbaas.sdk.android.example;
 
 import android.content.Context;
 import android.content.res.TypedArray;
