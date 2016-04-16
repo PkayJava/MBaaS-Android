@@ -23,14 +23,14 @@ public abstract class MBaaSAdapter extends RecyclerView.Adapter implements Netwo
     public static final int VIEW_ITEM = 1;
     public static final int VIEW_PROGRESS = 0;
 
-    private final Map<Long, Map<String, Object>> items;
+    private final Map<Integer, Map<String, Object>> items;
 
     // The minimum amount of items to have below your current scroll position
     // before loading more.
     private int visibleThreshold = 5;
     private int lastVisibleItem = 0;
     private int totalItemCount = 0;
-    private boolean loading;
+    private boolean loading = false;
     private boolean hasMore = false;
     private long pageNumber = 0;
 
@@ -95,7 +95,7 @@ public abstract class MBaaSAdapter extends RecyclerView.Adapter implements Netwo
         return this.items.size();
     }
 
-    protected Map<String, Object> getItem(long position) {
+    public Map<String, Object> getItem(int position) {
         return this.items.get(position);
     }
 
@@ -122,12 +122,15 @@ public abstract class MBaaSAdapter extends RecyclerView.Adapter implements Netwo
      * @param dy           The amount of vertical scroll.
      */
     public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+
         if (this.layoutManager != null) {
             totalItemCount = this.layoutManager.getItemCount();
             lastVisibleItem = this.layoutManager.findLastVisibleItemPosition();
+
             if (!loading && totalItemCount <= (lastVisibleItem + visibleThreshold)) {
                 // End has been reached
                 // Do something
+
                 if (hasMore) {
                     loadMore();
                 }
@@ -155,22 +158,25 @@ public abstract class MBaaSAdapter extends RecyclerView.Adapter implements Netwo
         if (eventId == EVENT_DISPLAY) {
             JavaScriptPaginationResponse response = gson.fromJson(json, JavaScriptPaginationResponse.class);
             this.pageNumber = response.getData().getPageNumber();
-            long index = this.items.size() - 1;
+            int index = this.items.size() - 1;
             for (Map<String, Object> item : response.getData().getItems()) {
                 index = index + 1;
+
                 this.items.put(index, item);
             }
             this.hasMore = response.getData().hasMore();
+
             recyclerView.setAdapter(this);
         } else if (eventId == EVENT_LOAD_MORE) {
             JavaScriptPaginationResponse response = gson.fromJson(json, JavaScriptPaginationResponse.class);
             this.pageNumber = response.getData().getPageNumber();
-            long index = this.items.size() - 1;
+            int index = this.items.size() - 1;
             for (Map<String, Object> item : response.getData().getItems()) {
                 index = index + 1;
                 this.items.put(index, item);
             }
             this.hasMore = response.getData().hasMore();
+            this.notifyDataSetChanged();
         }
     }
 
