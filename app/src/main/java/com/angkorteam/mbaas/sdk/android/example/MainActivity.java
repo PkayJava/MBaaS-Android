@@ -82,6 +82,8 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
             public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
                 RecyclerView.ViewHolder vh;
 
+                Log.i("zz", "position : "+viewType);
+
                 if (viewType == MBaaSAdapter.VIEW_ITEM) {
                     View v = LayoutInflater.from(parent.getContext()).inflate(
                             R.layout.data_row, parent, false);
@@ -97,7 +99,8 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
             @Override
             public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
                 if (holder instanceof DataViewHolder) {
-                    ((DataViewHolder) holder).tvTitle.setText(dataList.get(position).getTitle());
+                    ((DataViewHolder) holder).tvTitle.setText(position+" : "+mbaasAdapter.getItem(position)+"");
+
 
                 } else {
                     ((ProgressViewHolder) holder).progressBar.getIndeterminateDrawable().setColorFilter(MainActivity.this.getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_IN);
