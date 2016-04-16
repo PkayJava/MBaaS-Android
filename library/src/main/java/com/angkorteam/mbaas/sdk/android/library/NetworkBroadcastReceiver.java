@@ -25,10 +25,18 @@ public class NetworkBroadcastReceiver extends BroadcastReceiver {
     public static final String EVENT_MESSAGE = "event_message";
     public static final String EVENT_ACTIVITY = "event_activity";
 
-    private final NetworkReceiver networkReceiver;
+    private NetworkReceiver networkReceiver;
 
     public NetworkBroadcastReceiver(NetworkReceiver networkReceiver) {
         this.uuid = UUID.randomUUID().toString();
+        this.networkReceiver = networkReceiver;
+    }
+
+    public NetworkBroadcastReceiver() {
+        this.uuid = UUID.randomUUID().toString();
+    }
+
+    public void setNetworkReceiver(NetworkReceiver networkReceiver) {
         this.networkReceiver = networkReceiver;
     }
 
