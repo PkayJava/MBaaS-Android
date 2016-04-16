@@ -140,6 +140,9 @@ public abstract class MBaaSAdapter extends RecyclerView.Adapter implements Netwo
     }
 
     protected void loadMore() {
+
+        items.put(items.size(), null);
+        this.notifyItemInserted(items.size()-1);
         MBaaSApplication application = null;
         if (activity.getApplicationContext() instanceof MBaaSApplication) {
             application = (MBaaSApplication) activity.getApplicationContext();
@@ -168,6 +171,9 @@ public abstract class MBaaSAdapter extends RecyclerView.Adapter implements Netwo
 
             recyclerView.setAdapter(this);
         } else if (eventId == EVENT_LOAD_MORE) {
+
+            items.remove(items.size()-1);
+            this.notifyItemRemoved(items.size());
             JavaScriptPaginationResponse response = gson.fromJson(json, JavaScriptPaginationResponse.class);
             this.pageNumber = response.getData().getPageNumber();
             int index = this.items.size() - 1;
