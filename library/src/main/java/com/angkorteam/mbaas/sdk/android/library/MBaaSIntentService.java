@@ -15,10 +15,12 @@ import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2RefreshRes
 import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
+import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.util.WeakHashMap;
 
-import retrofit2.Call;
+import retrofit2.*;
 
 /**
  * Created by socheat on 4/13/16.
@@ -26,6 +28,8 @@ import retrofit2.Call;
 public class MBaaSIntentService extends IntentService {
 
     private static final String TAG = MBaaSIntentService.class.getName();
+
+    public static final WeakHashMap<Integer, Call> REVOKED = new WeakHashMap<>();
 
     public static final String SERVICE = "service";
     public static final String SERVICE_ACCESS_TOKEN = "accessToken";
@@ -72,26 +76,42 @@ public class MBaaSIntentService extends IntentService {
             String oauth2State = intent.getStringExtra(MBaaSIntentService.OAUTH2_STATE);
             MBaaSClient client = application.getMBaaSClient();
             Call<OAuth2AuthorizeResponse> responseCall = client.oauth2Authorize(oauth2State, oauth2Code);
-            retrofit2.Response<OAuth2AuthorizeResponse> response = null;
             try {
-                response = responseCall.execute();
-            } catch (IOException e) {
-            }
-            if (response != null) {
-                OAuth2AuthorizeResponse responseBody = response.body();
-                sharedPreferences.edit().putString(MBaaSIntentService.ACCESS_TOKEN, responseBody.getAccessToken()).apply();
-                sharedPreferences.edit().putString(MBaaSIntentService.REFRESH_TOKEN, responseBody.getRefreshToken()).apply();
-            }
-            if (intent.hasExtra(MBaaSIntentService.RECEIVER) && intent.getStringExtra(MBaaSIntentService.RECEIVER) != null && !"".equals(intent.getStringExtra(MBaaSIntentService.RECEIVER))) {
-                String receiver = intent.getStringExtra(MBaaSIntentService.RECEIVER);
-                Intent receiverIntent = new Intent(receiver);
-                if (response != null && response.body() != null && response.body().getHttpCode() == 200) {
-                    receiverIntent.putExtra(MBaaSIntentService.OAUTH2_RESULT, Activity.RESULT_OK);
-                } else {
-                    receiverIntent.putExtra(MBaaSIntentService.OAUTH2_RESULT, Activity.RESULT_CANCELED);
+                int eventId = intent.getIntExtra(NetworkBroadcastReceiver.EVENT_ID, -1);
+                String activity = intent.getStringExtra(NetworkBroadcastReceiver.EVENT_ACTIVITY);
+                Class<Activity> clazz = (Class<Activity>) Class.forName(activity);
+                try {
+                    retrofit2.Response<OAuth2AuthorizeResponse> response = responseCall.execute();
+                    OAuth2AuthorizeResponse responseBody = response.body();
+                    sharedPreferences.edit().putString(MBaaSIntentService.ACCESS_TOKEN, responseBody.getAccessToken()).apply();
+                    sharedPreferences.edit().putString(MBaaSIntentService.REFRESH_TOKEN, responseBody.getRefreshToken()).apply();
+                    if (REVOKED.get(eventId) != null) {
+                        try {
+                            retrofit2.Response res = REVOKED.get(eventId).execute();
+                            Intent intentActivity = new Intent(this, clazz);
+                            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_RESPONSE);
+                            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_ID, eventId);
+                            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_JSON, new Gson().toJson(res.body()));
+                            intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intentActivity);
+                        } catch (IOException e) {
+                            Intent intentActivity = new Intent(this, clazz);
+                            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_FAILURE);
+                            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_ID, eventId);
+                            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_MESSAGE, e.getMessage());
+                            intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intentActivity);
+                        }
+                    }
+                } catch (IOException e) {
+                    Intent intentActivity = new Intent(this, clazz);
+                    intentActivity.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_UNAUTHORIZED);
+                    intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_ID, eventId);
+                    intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_MESSAGE, e.getMessage());
+                    intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intentActivity);
                 }
-                LocalBroadcastManager.getInstance(this).sendBroadcast(receiverIntent);
-                return;
+            } catch (ClassNotFoundException e) {
             }
         } else if (SERVICE_REFRESH_TOKEN.equals(intent.getStringExtra(MBaaSIntentService.SERVICE))) {
             MBaaSClient client = application.getMBaaSClient();

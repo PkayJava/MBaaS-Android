@@ -1,19 +1,27 @@
 package com.angkorteam.mbaas.sdk.android.example;
 
-import android.app.Activity;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.angkorteam.mbaas.sdk.android.library.MBaaSAdapter;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSCallback;
-import com.angkorteam.mbaas.sdk.android.library.MBaaSOperation;
+import com.angkorteam.mbaas.sdk.android.library.NetworkBroadcastReceiver;
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,45 +32,36 @@ import Module.Data;
 import adapter.DataAdapter;
 import interfaces.OnLoadMoreListener;
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import utils.DividerItemDecoration;
 
-public class MainActivity extends AppCompatActivity implements Callback<JavaScriptExecuteResponse>, MBaaSOperation {
+public class MainActivity extends AppCompatActivity implements NetworkBroadcastReceiver.NetworkReceiver {
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     public static final String TAG = "MBaaS";
 
-    private TextView mInformationTextView;
-
     private RecyclerView recyclerView;
     private LinearLayoutManager linearLayoutManager;
-    private DataAdapter adapter;
+    //    private DataAdapter adapter;
     private Data data;
     private List<Data> dataList = new ArrayList<Data>();
     private int requestCounter = 0;
 
+    private NetworkBroadcastReceiver broadcastReceiver = null;
+    private NetworkBroadcastReceiver mbaasAdapterBroadcastReceiver = null;
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == 100) {
-                Application application = (Application) getApplication();
-                Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today");
-                responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, this));
-            }
-        } else if (resultCode == Activity.RESULT_CANCELED) {
-            mInformationTextView.setText("User Denied");
-        }
-        Log.i("MBaaS", "requestCode " + requestCode + ", resultCode " + resultCode);
-    }
+    private MBaaSAdapter mbaasAdapter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        broadcastReceiver = new NetworkBroadcastReceiver(this);
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
+        manager.registerReceiver(broadcastReceiver, new IntentFilter(broadcastReceiver.getUuid()));
+        mbaasAdapterBroadcastReceiver = new NetworkBroadcastReceiver();
+        manager.registerReceiver(mbaasAdapterBroadcastReceiver, new IntentFilter(mbaasAdapterBroadcastReceiver.getUuid()));
+
         setContentView(R.layout.activity_main);
-        mInformationTextView = (TextView) findViewById(R.id.informationTextView);
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         linearLayoutManager = new LinearLayoutManager(this);
@@ -70,22 +69,42 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
         recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
 
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("offset", 0);
-        Application application = (Application) getApplication();
-        Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today", params);
-        responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, this));
-    }
+        if (NetworkBroadcastReceiver.EVENT_UNAUTHORIZED == getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT, -1)) {
+            onUnauthorized(getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT_ID, -1));
+        } else if (NetworkBroadcastReceiver.EVENT_RESPONSE == getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT, -1)) {
+            onResponse(getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT_ID, -1), getIntent().getStringExtra(NetworkBroadcastReceiver.EVENT_JSON));
+        } else {
 
-    @Override
-    public void onResponse(Call<JavaScriptExecuteResponse> call, Response<JavaScriptExecuteResponse> response) {
-        JavaScriptExecuteResponse responseBody = response.body();
-        Log.i("MBaaS", responseBody.getMethod());
-    }
+        }
 
-    @Override
-    public void onFailure(Call<JavaScriptExecuteResponse> call, Throwable t) {
+        mbaasAdapter = new MBaaSAdapter(this, this.mbaasAdapterBroadcastReceiver, "js_khmer_today", recyclerView) {
+            @Override
+            public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                RecyclerView.ViewHolder vh;
 
+                if (viewType == MBaaSAdapter.VIEW_ITEM) {
+                    View v = LayoutInflater.from(parent.getContext()).inflate(
+                            R.layout.data_row, parent, false);
+                    vh = new DataViewHolder(v);
+                } else {
+                    View v = LayoutInflater.from(parent.getContext()).inflate(
+                            R.layout.recycler_progress, parent, false);
+                    vh = new ProgressViewHolder(v);
+                }
+                return vh;
+            }
+
+            @Override
+            public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+                if (holder instanceof DataViewHolder) {
+                    ((DataViewHolder) holder).tvTitle.setText(dataList.get(position).getTitle());
+
+                } else {
+                    ((ProgressViewHolder) holder).progressBar.getIndeterminateDrawable().setColorFilter(MainActivity.this.getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_IN);
+                    ((ProgressViewHolder) holder).progressBar.setIndeterminate(true);
+                }
+            }
+        };
     }
 
     @Override
@@ -101,6 +120,9 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
 
     @Override
     protected void onDestroy() {
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
+        manager.unregisterReceiver(broadcastReceiver);
+        manager.unregisterReceiver(mbaasAdapterBroadcastReceiver);
         super.onDestroy();
     }
 
@@ -125,74 +147,101 @@ public class MainActivity extends AppCompatActivity implements Callback<JavaScri
         return true;
     }
 
-    @Override
-    public void operationResponse(int operationId, Object object) {
-        if (operationId == 100) {
-            JavaScriptExecuteResponse response = (JavaScriptExecuteResponse) object;
-            if (response.getHttpCode() == 200) {
-                List<Map<String, Object>> test = (List<Map<String, Object>>) response.getData();
-                List<String> titles = new ArrayList<>();
+    public class DataViewHolder extends RecyclerView.ViewHolder {
+        private TextView tvTitle;
 
-                if(requestCounter == 0){
-                    for (Map<String, Object> t : test) {
-                        data = new Data();
-                        data.setTitle("" + t.get("title"));
-                        data.setDescription("" + t.get("description"));
-                        data.setMediaImage("" + t.get("media_image"));
-                        data.setMediaMp3("" + t.get("media_mp3"));
-                        data.setMediaVideo("" + t.get("media_video"));
-                        dataList.add(data);
-                    }
+        public DataViewHolder(View v) {
+            super(v);
+            tvTitle = (TextView) v.findViewById(R.id.tvTitle);
+            v.setOnClickListener(new View.OnClickListener() {
 
-                    adapter = new DataAdapter(MainActivity.this, dataList, recyclerView);
-                    recyclerView.setAdapter(adapter);
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(MainActivity.this, DataDetailActivity.class);
+                    intent.putExtra("title", "" + dataList.get(getPosition()).getTitle());
+                    intent.putExtra("description", "" + dataList.get(getPosition()).getDescription());
+                    intent.putExtra("mp3", "" + dataList.get(getPosition()).getMediaMp3());
+                    intent.putExtra("image", "" + dataList.get(getPosition()).getMediaImage());
+                    intent.putExtra("video", "" + dataList.get(getPosition()).getMediaVideo());
+                    MainActivity.this.startActivity(intent);
                 }
-                else{
-                    dataList.remove(dataList.size() - 1);
-                    adapter.notifyItemRemoved(dataList.size());
-
-                    for (Map<String, Object> t : test) {
-                        data = new Data();
-                        data.setTitle("" + t.get("title"));
-                        data.setDescription("" + t.get("description"));
-                        data.setMediaImage("" + t.get("media_image"));
-                        data.setMediaMp3("" + t.get("media_mp3"));
-                        data.setMediaVideo("" + t.get("media_video"));
-                        dataList.add(data);
-                    }
-                    adapter.notifyDataSetChanged();
-                    adapter.setLoaded();
-                }
-                //mInformationTextView.setText((String) test.get(0).get("title"));
-                adapter.setOnLoadMoreListener(new OnLoadMoreListener() {
-                    @Override
-                    public void onLoadMore() {
-
-                        dataList.add(null);
-                        adapter.notifyItemInserted(dataList.size() - 1);
-
-                        requestCounter++;
-                        Map<String, Object> params = new HashMap<>();
-                        params.put("offset", 10 * requestCounter);
-
-                        Application application = (Application) getApplication();
-                        Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today", params);
-                        responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, MainActivity.this, MainActivity.this));
-                    }
-                });
-
-            } else {
-                mInformationTextView.setText(response.getResult());
-            }
+            });
         }
     }
 
-    @Override
-    public void operationRetry(int operationId) {
-        if (operationId == 100) {
-            Application application = (Application) getApplication();
-            Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today");
-            responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, this, this));
+    public class ProgressViewHolder extends RecyclerView.ViewHolder {
+        public ProgressBar progressBar;
+
+        public ProgressViewHolder(View v) {
+            super(v);
+            progressBar = (ProgressBar) v.findViewById(R.id.progressBar);
         }
+    }
+
+
+    @Override
+    public void onResponse(int operationId, String json) {
+//        if (operationId == 100) {
+//            Gson gson = new Gson();
+//            JavaScriptExecuteResponse response = gson.fromJson(json, JavaScriptExecuteResponse.class);
+//            List<Map<String, Object>> test = (List<Map<String, Object>>) response.getData();
+//
+//            if (requestCounter == 0) {
+//                for (Map<String, Object> t : test) {
+//                    data = new Data();
+//                    data.setTitle("" + t.get("title"));
+//                    data.setDescription("" + t.get("description"));
+//                    data.setMediaImage("" + t.get("media_image"));
+//                    data.setMediaMp3("" + t.get("media_mp3"));
+//                    data.setMediaVideo("" + t.get("media_video"));
+//                    dataList.add(data);
+//                }
+//
+//                adapter = new DataAdapter(MainActivity.this, dataList, recyclerView);
+//                recyclerView.setAdapter(adapter);
+//            } else {
+//                dataList.remove(dataList.size() - 1);
+//                adapter.notifyItemRemoved(dataList.size());
+//
+//                for (Map<String, Object> t : test) {
+//                    data = new Data();
+//                    data.setTitle("" + t.get("title"));
+//                    data.setDescription("" + t.get("description"));
+//                    data.setMediaImage("" + t.get("media_image"));
+//                    data.setMediaMp3("" + t.get("media_mp3"));
+//                    data.setMediaVideo("" + t.get("media_video"));
+//                    dataList.add(data);
+//                }
+//                adapter.notifyDataSetChanged();
+//                adapter.setLoaded();
+//            }
+//
+//            adapter.setOnLoadMoreListener(new OnLoadMoreListener() {
+//                @Override
+//                public void onLoadMore() {
+//
+//                    dataList.add(null);
+//                    adapter.notifyItemInserted(dataList.size() - 1);
+//
+//                    requestCounter++;
+//                    Map<String, Object> params = new HashMap<>();
+//                    params.put("offset", 10 * requestCounter);
+//
+//                    Application application = (Application) getApplication();
+//                    Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost("js_khmer_today", params);
+//                    responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(100, MainActivity.this, broadcastReceiver));
+//                }
+//            });
+//        }
+    }
+
+    @Override
+    public void onFailure(int operationId, String message) {
+        Log.i("MBaaS", "onFailure " + operationId);
+    }
+
+    @Override
+    public void onUnauthorized(int operationId) {
+        Log.i("MBaaS", "onUnauthorized " + operationId);
     }
 }

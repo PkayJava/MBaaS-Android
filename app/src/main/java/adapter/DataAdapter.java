@@ -3,6 +3,7 @@ package adapter;
 /**
  * Created by kor on 4/1/16.
  */
+
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PorterDuff;
@@ -20,6 +21,7 @@ import android.widget.Toast;
 
 import com.angkorteam.mbaas.sdk.android.example.DataDetailActivity;
 import com.angkorteam.mbaas.sdk.android.example.R;
+import com.angkorteam.mbaas.sdk.android.library.NetworkBroadcastReceiver;
 
 import java.util.List;
 
@@ -44,39 +46,31 @@ public class DataAdapter extends RecyclerView.Adapter {
     public DataAdapter(Context context, List<Data> dataList, RecyclerView recyclerView) {
         this.context = context;
         this.dataList = dataList;
-
         if (recyclerView.getLayoutManager() instanceof LinearLayoutManager) {
-
-            final LinearLayoutManager linearLayoutManager = (LinearLayoutManager) recyclerView
-                    .getLayoutManager();
-            recyclerView
-                    .addOnScrollListener(new RecyclerView.OnScrollListener() {
-                        @Override
-                        public void onScrolled(RecyclerView recyclerView,
-                                               int dx, int dy) {
-                            super.onScrolled(recyclerView, dx, dy);
-
-                            totalItemCount = linearLayoutManager.getItemCount();
-                            lastVisibleItem = linearLayoutManager
-                                    .findLastVisibleItemPosition();
-                            if (!loading
-                                    && totalItemCount <= (lastVisibleItem + visibleThreshold)) {
-                                // End has been reached
-                                // Do something
-                                if (onLoadMoreListener != null) {
-                                    onLoadMoreListener.onLoadMore();
-                                }
-                                loading = true;
-                            }
+            final LinearLayoutManager linearLayoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+            recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    totalItemCount = linearLayoutManager.getItemCount();
+                    lastVisibleItem = linearLayoutManager.findLastVisibleItemPosition();
+                    if (!loading && totalItemCount <= (lastVisibleItem + visibleThreshold)) {
+                        // End has been reached
+                        // Do something
+                        if (onLoadMoreListener != null) {
+                            onLoadMoreListener.onLoadMore();
                         }
-                    });
+                        loading = true;
+                    }
+                }
+            });
         }
     }
 
     @Override
     public int getItemViewType(int position) {
 
-        Log.i("zz", "Position : "+position);
+        Log.i("zz", "Position : " + position);
 
         return dataList.get(position) != null ? VIEW_ITEM : VIEW_PROG;
     }
@@ -134,11 +128,11 @@ public class DataAdapter extends RecyclerView.Adapter {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(context, DataDetailActivity.class);
-                    intent.putExtra("title", ""+dataList.get(getPosition()).getTitle());
-                    intent.putExtra("description", ""+dataList.get(getPosition()).getDescription());
-                    intent.putExtra("mp3", ""+dataList.get(getPosition()).getMediaMp3());
-                    intent.putExtra("image", ""+dataList.get(getPosition()).getMediaImage());
-                    intent.putExtra("video", ""+dataList.get(getPosition()).getMediaVideo());
+                    intent.putExtra("title", "" + dataList.get(getPosition()).getTitle());
+                    intent.putExtra("description", "" + dataList.get(getPosition()).getDescription());
+                    intent.putExtra("mp3", "" + dataList.get(getPosition()).getMediaMp3());
+                    intent.putExtra("image", "" + dataList.get(getPosition()).getMediaImage());
+                    intent.putExtra("video", "" + dataList.get(getPosition()).getMediaVideo());
                     context.startActivity(intent);
                 }
             });
