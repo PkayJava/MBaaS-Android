@@ -1,10 +1,15 @@
 package com.angkorteam.mbaas.sdk.android.example;
 
 import android.content.pm.PackageManager;
+import android.util.Log;
 
 import com.angkorteam.mbaas.sdk.android.library.MBaaSApplication;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSClient;
+import com.angkorteam.mbaas.sdk.android.library.MBaaSIntentService;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.google.android.gms.iid.InstanceID;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 

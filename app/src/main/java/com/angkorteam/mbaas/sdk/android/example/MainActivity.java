@@ -11,7 +11,12 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.angkorteam.mbaas.sdk.android.library.MBaaSAdapter;
+import com.angkorteam.mbaas.sdk.android.library.MBaaSApplication;
+import com.angkorteam.mbaas.sdk.android.library.MBaaSCallback;
+import com.angkorteam.mbaas.sdk.android.library.MBaaSClient;
 import com.angkorteam.mbaas.sdk.android.library.NetworkBroadcastReceiver;
+import com.angkorteam.mbaas.sdk.android.library.request.file.FileCreateRequest;
+import com.angkorteam.mbaas.sdk.android.library.response.file.FileCreateResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
@@ -55,6 +60,17 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
         } else {
 
         }
+
+        MBaaSApplication application = (MBaaSApplication) getApplication();
+        MBaaSClient client = application.getMBaaSClient();
+
+        FileCreateRequest fileCreateRequest = new FileCreateRequest();
+        fileCreateRequest.setContentType("text/plain");
+        fileCreateRequest.setContent("hello".getBytes());
+
+        String gson = application.getMBaaSClient().getGson().toJson(fileCreateRequest);
+
+        client.fileCreate("test.txt", fileCreateRequest).enqueue(new MBaaSCallback<FileCreateResponse>(112, this, this.broadcastReceiver));
 
         mbaasAdapter = new MBaaSAdapter<DataViewHolder>(this, R.layout.data_row, this.mbaasAdapterBroadcastReceiver, "js_khmer_today", recyclerView) {
             @Override
@@ -136,11 +152,14 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
 
     @Override
     public void onResponse(int eventId, String json) {
+        if (eventId == 112) {
+            Log.i("MBaaS", json);
+        }
     }
 
     @Override
     public void onFailure(int eventId, String message) {
-        Log.i("MBaaS", "onFailure " + eventId);
+        Log.i("MBaaS", "onFailure " + eventId + " " + message);
     }
 
     @Override

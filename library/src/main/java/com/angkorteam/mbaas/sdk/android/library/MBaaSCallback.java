@@ -75,10 +75,18 @@ public class MBaaSCallback<T extends Response> implements Callback<T> {
                 LocalBroadcastManager.getInstance(this.activity).sendBroadcast(intent);
             }
         } else {
-            Intent intent = new Intent(broadcastReceiver.getUuid());
-            intent.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_RESPONSE);
-            intent.putExtra(NetworkBroadcastReceiver.EVENT_ID, this.eventId);
-            LocalBroadcastManager.getInstance(this.activity).sendBroadcast(intent);
+            if (response.code() == 200) {
+                Intent intent = new Intent(broadcastReceiver.getUuid());
+                intent.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_RESPONSE);
+                intent.putExtra(NetworkBroadcastReceiver.EVENT_ID, this.eventId);
+                LocalBroadcastManager.getInstance(this.activity).sendBroadcast(intent);
+            } else {
+                Intent intent = new Intent(broadcastReceiver.getUuid());
+                intent.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_FAILURE);
+                intent.putExtra(NetworkBroadcastReceiver.EVENT_MESSAGE, response.message());
+                intent.putExtra(NetworkBroadcastReceiver.EVENT_ID, this.eventId);
+                LocalBroadcastManager.getInstance(this.activity).sendBroadcast(intent);
+            }
         }
     }
 

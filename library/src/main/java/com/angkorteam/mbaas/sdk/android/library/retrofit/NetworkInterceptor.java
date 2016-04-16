@@ -3,23 +3,16 @@ package com.angkorteam.mbaas.sdk.android.library.retrofit;
 import android.content.SharedPreferences;
 import android.util.Log;
 
-import com.angkorteam.mbaas.sdk.android.library.MBaaSClient;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSIntentService;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.io.IOException;
 import java.util.Date;
 
 import okhttp3.Interceptor;
-import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
-import okhttp3.internal.http.RealResponseBody;
-import okio.BufferedSource;
 
 /**
  * Created by socheat on 4/6/16.
@@ -36,7 +29,7 @@ public class NetworkInterceptor implements Interceptor {
 
     private final String sdkVersion;
 
-    private Object lock = new Object();
+    public static final Object LOCK = new Object();
 
     public NetworkInterceptor(SharedPreferences preferences, String clientId, String clientSecret, String appVersion, String sdkVersion) {
         this.preferences = preferences;
@@ -48,10 +41,11 @@ public class NetworkInterceptor implements Interceptor {
 
     @Override
     public Response intercept(Chain chain) throws IOException {
-        synchronized (lock) {
+        synchronized (LOCK) {
             long now = System.currentTimeMillis();
             Log.i("MBaaS", "Locked " + DateFormatUtils.ISO_DATE_TIME_ZONE_FORMAT.format(new Date()));
             Request originalRequest = chain.request();
+            Log.i("MBaaS", "URL " + originalRequest.url());
             Request.Builder requestBuilder = originalRequest.newBuilder();
             String accessToken = preferences.getString(MBaaSIntentService.ACCESS_TOKEN, "");
             Log.i("MBaaS", "AccessToken " + accessToken);

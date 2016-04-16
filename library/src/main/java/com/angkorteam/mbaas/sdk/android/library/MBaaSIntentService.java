@@ -128,32 +128,7 @@ public class MBaaSIntentService extends IntentService {
             }
         } else if (SERVICE_GCM_TOKEN.equals(intent.getStringExtra(MBaaSIntentService.SERVICE))) {
             try {
-                InstanceID instanceID = InstanceID.getInstance(this);
-                String token = instanceID.getToken(intent.getStringExtra(MBaaSIntentService.SENDER_ID), GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
-                // [END get_token]
-                Log.i(TAG, "GCM Registration Token: " + token);
-
-                MBaaSClient client = application.getMBaaSClient();
-
-                DeviceRegisterRequest request = new DeviceRegisterRequest();
-                request.setClientId(application.getMBaaSClientId());
-                request.setClientSecret(application.getMBaaSClientSecret());
-                request.setAlias(application.getMBaaSAlias());
-                request.setCategories(application.getMBaaSCategories());
-                request.setDeviceType(application.getMBaaSDeviceType());
-                request.setOperatingSystem(application.getMBaaSOperatingSystem());
-                request.setOsVersion(application.getMBaaSOsVersion());
-                request.setDeviceToken(token);
-                Call<DeviceRegisterResponse> responseCall = client.deviceRegister(request);
-                retrofit2.Response<DeviceRegisterResponse> response = responseCall.execute();
-                DeviceRegisterResponse responseBody = response.body();
-                if (response.code() != 200 || responseBody.getHttpCode() != 200) {
-                    sharedPreferences.edit().putString(MBaaSIntentService.ACCESS_TOKEN, "").apply();
-                    throw new IOException(response.body().getResult());
-                }
-                sharedPreferences.edit().putString(MBaaSIntentService.ACCESS_TOKEN, responseBody.getData().getAccessToken()).apply();
-                // Subscribe to topic channels
-                subscribeTopics(token);
+                MBaaSUtils.requestGcm(sharedPreferences, this, application);
             } catch (Throwable e) {
                 sharedPreferences.edit().putString(MBaaSIntentService.ACCESS_TOKEN, "").apply();
             }
@@ -164,19 +139,4 @@ public class MBaaSIntentService extends IntentService {
             LocalBroadcastManager.getInstance(this).sendBroadcast(receiverIntent);
         }
     }
-
-    /**
-     * Subscribe to any GCM topics of interest, as defined by the TOPICS constant.
-     *
-     * @param token GCM token
-     * @throws IOException if unable to reach the GCM PubSub service
-     */
-    // [START subscribe_topics]
-    private void subscribeTopics(String token) throws IOException {
-        GcmPubSub pubSub = GcmPubSub.getInstance(this);
-        for (String topic : TOPICS) {
-            pubSub.subscribe(token, "/topics/" + topic, null);
-        }
-    }
-    // [END subscribe_topics]
 }
