@@ -203,7 +203,7 @@ public abstract class MBaaSAdapter<T extends RecyclerView.ViewHolder> extends Re
 
             recyclerView.setAdapter(this);
         } else if (eventId == EVENT_LOAD_MORE) {
-
+            loading = false;
             items.remove(items.size() - 1);
             this.notifyItemRemoved(items.size());
             JavaScriptPaginationResponse response = gson.fromJson(json, JavaScriptPaginationResponse.class);
