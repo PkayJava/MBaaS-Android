@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptExecuteResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptPaginationResponse;
@@ -220,7 +221,7 @@ public abstract class MBaaSAdapter<T extends RecyclerView.ViewHolder> extends Re
 
     @Override
     public void onFailure(int operationId, String message) {
-
+        Toast.makeText(activity, message, Toast.LENGTH_LONG).show();
     }
 
     @Override

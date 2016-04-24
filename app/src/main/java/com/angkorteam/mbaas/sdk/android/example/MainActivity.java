@@ -72,10 +72,10 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
 
         client.fileCreate("test.txt", fileCreateRequest).enqueue(new MBaaSCallback<FileCreateResponse>(112, this, this.broadcastReceiver));
 
-        mbaasAdapter = new MBaaSAdapter<DataViewHolder>(this, R.layout.data_row, this.mbaasAdapterBroadcastReceiver, "js_khmer_today", recyclerView) {
+        mbaasAdapter = new MBaaSAdapter<DataViewHolder>(this, R.layout.data_row, this.mbaasAdapterBroadcastReceiver, "khmer_now", recyclerView) {
             @Override
             protected void onPopulateItem(DataViewHolder holder, int position, Map<String, Object> item) {
-                String title = (String) item.get("title");
+                String title = (String) item.get("headline");
                 String text = position + " : " + title;
                 holder.tvTitle.setText(text);
             }
