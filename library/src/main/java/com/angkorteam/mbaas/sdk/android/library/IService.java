@@ -4,6 +4,8 @@ import com.angkorteam.mbaas.sdk.android.library.request.asset.AssetCreateRequest
 import com.angkorteam.mbaas.sdk.android.library.request.device.DeviceRegisterRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.file.FileCreateRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.oauth2.OAuth2RefreshRequest;
+import com.angkorteam.mbaas.sdk.android.library.request.security.SecurityLoginRequest;
+import com.angkorteam.mbaas.sdk.android.library.request.security.SecuritySignUpRequest;
 import com.angkorteam.mbaas.sdk.android.library.response.asset.AssetCreateResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.asset.AssetDeleteResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.device.DeviceMetricsResponse;
@@ -15,6 +17,8 @@ import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptEx
 import com.angkorteam.mbaas.sdk.android.library.response.monitor.MonitorTimeResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2AuthorizeResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2RefreshResponse;
+import com.angkorteam.mbaas.sdk.android.library.response.security.SecurityLoginResponse;
+import com.angkorteam.mbaas.sdk.android.library.response.security.SecuritySignUpResponse;
 
 import java.util.Map;
 
@@ -32,57 +36,63 @@ import retrofit2.http.QueryMap;
 /**
  * Created by socheat on 4/6/16.
  */
-public interface IService {
+interface IService {
 
     @POST("api/rest/registry/device")
-    public Call<DeviceRegisterResponse> deviceRegister(@Body DeviceRegisterRequest request);
+    Call<DeviceRegisterResponse> deviceRegister(@Body DeviceRegisterRequest request);
 
     @DELETE("api/rest/registry/device/{deviceToken}")
-    public Call<DeviceUnregisterResponse> deviceUnregister(@Path("deviceToken") String deviceToken);
+    Call<DeviceUnregisterResponse> deviceUnregister(@Path("deviceToken") String deviceToken);
 
     @PUT("api/rest/registry/device/pushMessage/{messageId}")
-    public Call<DeviceMetricsResponse> sendMetrics(@Path("messageId") String messageId);
+    Call<DeviceMetricsResponse> sendMetrics(@Path("messageId") String messageId);
 
     @POST("api/oauth2/authorize")
     @FormUrlEncoded
-    public Call<OAuth2AuthorizeResponse> oauth2Authorize(@Field("client_id") String clientId,
-                                                         @Field("client_secret") String clientSecret,
-                                                         @Field("grant_type") String grantType,
-                                                         @Field("redirect_uri") String redirectUri,
-                                                         @Field("state") String state,
-                                                         @Field("code") String code);
+    Call<OAuth2AuthorizeResponse> oauth2Authorize(@Field("client_id") String clientId,
+                                                  @Field("client_secret") String clientSecret,
+                                                  @Field("grant_type") String grantType,
+                                                  @Field("redirect_uri") String redirectUri,
+                                                  @Field("state") String state,
+                                                  @Field("code") String code);
 
     @POST("api/oauth2/refresh")
-    public Call<OAuth2RefreshResponse> oauth2Refresh(@Body OAuth2RefreshRequest request);
+    Call<OAuth2RefreshResponse> oauth2Refresh(@Body OAuth2RefreshRequest request);
 
     @POST("api/javascript/execute/{script}")
-    public Call<JavaScriptExecuteResponse> javascriptExecutePost(@Path("script") String script, @Body Map<String, Object> request);
+    Call<JavaScriptExecuteResponse> javascriptExecutePost(@Path("script") String script, @Body Map<String, Object> request);
 
     @GET("api/javascript/execute/{script}")
-    public Call<JavaScriptExecuteResponse> javascriptExecuteGet(@Path("script") String script);
+    Call<JavaScriptExecuteResponse> javascriptExecuteGet(@Path("script") String script);
 
     @GET("api/javascript/execute/{script}")
-    public Call<JavaScriptExecuteResponse> javascriptExecuteGet(@Path("script") String script, @QueryMap Map<String, Object> params);
+    Call<JavaScriptExecuteResponse> javascriptExecuteGet(@Path("script") String script, @QueryMap Map<String, Object> params);
 
     @PUT("api/javascript/execute/{script}")
-    public Call<JavaScriptExecuteResponse> javascriptExecutePut(@Path("script") String script);
+    Call<JavaScriptExecuteResponse> javascriptExecutePut(@Path("script") String script);
 
     @PUT("api/javascript/execute/{script}")
-    public Call<JavaScriptExecuteResponse> javascriptExecutePut(@Path("script") String script, @Body Map<String, Object> request);
+    Call<JavaScriptExecuteResponse> javascriptExecutePut(@Path("script") String script, @Body Map<String, Object> request);
 
     @POST("api/file/create/{filename}")
-    public Call<FileCreateResponse> fileCreate(@Path(value = "filename", encoded = false) String filename, @Body FileCreateRequest request);
+    Call<FileCreateResponse> fileCreate(@Path(value = "filename", encoded = false) String filename, @Body FileCreateRequest request);
 
     @DELETE("api/file/delete/{fileId}")
-    public Call<FileDeleteResponse> fileDelete(@Path("fileId") String fileId);
+    Call<FileDeleteResponse> fileDelete(@Path("fileId") String fileId);
 
     @POST("api/asset/create/{filename}")
-    public Call<AssetCreateResponse> assetCreate(@Path("filename") String filename, @Body AssetCreateRequest request);
+    Call<AssetCreateResponse> assetCreate(@Path("filename") String filename, @Body AssetCreateRequest request);
 
     @DELETE("api/file/delete/{assetId}")
-    public Call<AssetDeleteResponse> assetDelete(@Path("assetId") String assetId);
+    Call<AssetDeleteResponse> assetDelete(@Path("assetId") String assetId);
+
+    @POST("api/security/signup")
+    Call<SecuritySignUpResponse> securitySignup(@Body SecuritySignUpRequest request);
+
+    @POST("api/security/login")
+    Call<SecurityLoginResponse> securityLogin(@Body SecurityLoginRequest request);
 
     @GET("api/monitor/time")
-    public Call<MonitorTimeResponse> monitorTime();
+    Call<MonitorTimeResponse> monitorTime();
 
 }

@@ -17,6 +17,7 @@ import com.angkorteam.mbaas.sdk.android.library.MBaaSClient;
 import com.angkorteam.mbaas.sdk.android.library.NetworkBroadcastReceiver;
 import com.angkorteam.mbaas.sdk.android.library.request.file.FileCreateRequest;
 import com.angkorteam.mbaas.sdk.android.library.response.file.FileCreateResponse;
+import com.angkorteam.mbaas.sdk.android.library.response.security.SecurityLoginResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
@@ -52,7 +53,6 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
 
-
         if (NetworkBroadcastReceiver.EVENT_UNAUTHORIZED == getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT, -1)) {
             onUnauthorized(getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT_ID, -1));
         } else if (NetworkBroadcastReceiver.EVENT_RESPONSE == getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT, -1)) {
@@ -64,13 +64,7 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
         MBaaS mbaas = MBaaS.getInstance();
         MBaaSClient client = mbaas.getClient();
 
-        FileCreateRequest fileCreateRequest = new FileCreateRequest();
-        fileCreateRequest.setContentType("text/plain");
-        fileCreateRequest.setContent("hello".getBytes());
-
-        String gson = client.getGson().toJson(fileCreateRequest);
-
-        client.fileCreate("test.txt", fileCreateRequest).enqueue(new MBaaSCallback<FileCreateResponse>(112, this, this.broadcastReceiver));
+        client.securityLogin("admin", "admin").enqueue(new MBaaSCallback<SecurityLoginResponse>(1002, this, broadcastReceiver));
 
         mbaasAdapter = new MBaaSAdapter<DataViewHolder>(this, R.layout.data_row, this.mbaasAdapterBroadcastReceiver, "khmer_now", recyclerView) {
             @Override
@@ -153,6 +147,8 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
     @Override
     public void onResponse(int eventId, String json) {
         if (eventId == 112) {
+            Log.i("MBaaS", json);
+        } else if (eventId == 1002) {
             Log.i("MBaaS", json);
         }
     }

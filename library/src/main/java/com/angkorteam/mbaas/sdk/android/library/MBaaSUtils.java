@@ -27,6 +27,7 @@ public class MBaaSUtils {
         String token = instanceID.getToken(configuration.getString(MBaaS.SENDER_ID), GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
         // [END get_token]
         Log.i("MBaaS", "GCM Registration Token: " + token);
+        sharedPreferences.edit().putString(MBaaSIntentService.GCM_TOKEN, token).apply();
 
         MBaaSClient client = MBaaS.getInstance().getClient();
 

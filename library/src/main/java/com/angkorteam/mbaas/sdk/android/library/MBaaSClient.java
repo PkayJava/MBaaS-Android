@@ -8,6 +8,8 @@ import com.angkorteam.mbaas.sdk.android.library.request.asset.AssetCreateRequest
 import com.angkorteam.mbaas.sdk.android.library.request.device.DeviceRegisterRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.file.FileCreateRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.oauth2.OAuth2RefreshRequest;
+import com.angkorteam.mbaas.sdk.android.library.request.security.SecurityLoginRequest;
+import com.angkorteam.mbaas.sdk.android.library.request.security.SecuritySignUpRequest;
 import com.angkorteam.mbaas.sdk.android.library.response.asset.AssetCreateResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.asset.AssetDeleteResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.device.DeviceMetricsResponse;
@@ -19,6 +21,8 @@ import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptEx
 import com.angkorteam.mbaas.sdk.android.library.response.monitor.MonitorTimeResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2AuthorizeResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2RefreshResponse;
+import com.angkorteam.mbaas.sdk.android.library.response.security.SecurityLoginResponse;
+import com.angkorteam.mbaas.sdk.android.library.response.security.SecuritySignUpResponse;
 import com.angkorteam.mbaas.sdk.android.library.retrofit.NetworkInterceptor;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -148,7 +152,36 @@ public class MBaaSClient {
     }
 
     public Call<AssetDeleteResponse> assetDelete(String assetId) {
-        return this.assetDelete(assetId);
+        return this.service.assetDelete(assetId);
+    }
+
+    public Call<SecurityLoginResponse> securityLogin(String username, String password) {
+        SecurityLoginRequest request = new SecurityLoginRequest();
+        request.setUsername(username);
+        request.setPassword(password);
+        request.setSecret(this.configuration.getString(MBaaS.CLIENT_SECRET));
+        request.setDeviceType(this.configuration.getString(MBaaS.DEVICE_TYPE));
+        request.setDeviceToken(this.sharedPreferences.getString(MBaaSIntentService.GCM_TOKEN, ""));
+        return this.service.securityLogin(request);
+    }
+
+    public Call<SecuritySignUpResponse> securitySignUp(String username,
+                                                       String password,
+                                                       Map<String, Object> byTheUser,
+                                                       Map<String, Object> byFriends,
+                                                       Map<String, Object> byAnonymousUsers,
+                                                       Map<String, Object> byRegisteredUsers) {
+        SecuritySignUpRequest request = new SecuritySignUpRequest();
+        request.setVisibleByTheUser(byTheUser);
+        request.setVisibleByFriends(byFriends);
+        request.setVisibleByAnonymousUsers(byAnonymousUsers);
+        request.setVisibleByRegisteredUsers(byRegisteredUsers);
+        request.setUsername(username);
+        request.setPassword(password);
+        request.setSecret(this.configuration.getString(MBaaS.CLIENT_SECRET));
+        request.setDeviceType(this.configuration.getString(MBaaS.DEVICE_TYPE));
+        request.setDeviceToken(this.sharedPreferences.getString(MBaaSIntentService.ACCESS_TOKEN, ""));
+        return this.service.securitySignup(request);
     }
 
     public Call<MonitorTimeResponse> monitorTime() {

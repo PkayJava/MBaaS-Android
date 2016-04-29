@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2RefreshResponse;
+import com.angkorteam.mbaas.sdk.android.library.response.security.SecurityLoginResponse;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -69,6 +70,15 @@ public class MBaaSCallback<T extends Response> implements Callback<T> {
                 intent.putExtra(NetworkBroadcastReceiver.EVENT_ID, this.eventId);
                 LocalBroadcastManager.getInstance(this.activity).sendBroadcast(intent);
             } else {
+                String httpUrl = call.request().url().toString();
+                String loginAddress = MBaaS.getInstance().getConfiguration().getString(MBaaS.SERVER_ADDRESS) + "api/security/login";
+                if (loginAddress.equals(httpUrl)) {
+                    SecurityLoginResponse securityLoginResponse = (SecurityLoginResponse) body;
+                    if (securityLoginResponse != null && securityLoginResponse.getData() != null) {
+                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(activity);
+                        preferences.edit().putString(MBaaSIntentService.ACCESS_TOKEN, securityLoginResponse.getData().getBearer()).apply();
+                    }
+                }
                 Intent intent = new Intent(broadcastReceiver.getUuid());
                 intent.putExtra(NetworkBroadcastReceiver.EVENT_ID, this.eventId);
                 intent.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_RESPONSE);
