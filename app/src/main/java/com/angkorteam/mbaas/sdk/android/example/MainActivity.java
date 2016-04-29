@@ -10,8 +10,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.angkorteam.mbaas.sdk.android.library.MBaaS;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSAdapter;
-import com.angkorteam.mbaas.sdk.android.library.MBaaSApplication;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSCallback;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSClient;
 import com.angkorteam.mbaas.sdk.android.library.NetworkBroadcastReceiver;
@@ -61,14 +61,14 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
 
         }
 
-        MBaaSApplication application = (MBaaSApplication) getApplication();
-        MBaaSClient client = application.getMBaaSClient();
+        MBaaS mbaas = MBaaS.getInstance();
+        MBaaSClient client = mbaas.getClient();
 
         FileCreateRequest fileCreateRequest = new FileCreateRequest();
         fileCreateRequest.setContentType("text/plain");
         fileCreateRequest.setContent("hello".getBytes());
 
-        String gson = application.getMBaaSClient().getGson().toJson(fileCreateRequest);
+        String gson = client.getGson().toJson(fileCreateRequest);
 
         client.fileCreate("test.txt", fileCreateRequest).enqueue(new MBaaSCallback<FileCreateResponse>(112, this, this.broadcastReceiver));
 

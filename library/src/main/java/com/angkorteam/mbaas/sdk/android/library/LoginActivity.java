@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import org.apache.commons.configuration.XMLPropertiesConfiguration;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -54,28 +55,25 @@ public class LoginActivity extends AppCompatActivity {
         this.activity = getIntent().getStringExtra(NetworkBroadcastReceiver.EVENT_ACTIVITY);
         this.eventId = getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT_ID, -1);
 
-        MBaaSApplication application = null;
-        if (getApplication() instanceof MBaaSApplication) {
-            application = (MBaaSApplication) getApplication();
+        try {
+            Class<Activity> clazz = (Class<Activity>) Class.forName(LoginActivity.this.activity);
+            Intent intentActivity = new Intent(this, clazz);
+            intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_FAILURE);
+            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_MESSAGE, "sdk configuration failure");
+            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_ID, eventId);
+            this.startActivity(intentActivity);
+        } catch (ClassNotFoundException e) {
         }
 
-        if (application == null) {
-            try {
-                Class<Activity> clazz = (Class<Activity>) Class.forName(LoginActivity.this.activity);
-                Intent intentActivity = new Intent(this, clazz);
-                intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intentActivity.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_FAILURE);
-                intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_MESSAGE, "sdk configuration failure");
-                intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_ID, eventId);
-                this.startActivity(intentActivity);
-            } catch (ClassNotFoundException e) {
-            }
-        }
+        MBaaS mbaas = MBaaS.getInstance();
+        XMLPropertiesConfiguration configuration = mbaas.getConfiguration();
 
-        String serviceAuthorize = application.getMBaaSAddress().endsWith("/") ? application.getMBaaSAddress() + "web/oauth2/authorize" : application.getMBaaSAddress() + "/web/oauth2/authorize";
-        this.link = application.getMBaaSAddress().endsWith("/") ? application.getMBaaSAddress() + "web/oauth2/response" : application.getMBaaSAddress() + "/web/oauth2/response";
+        String serverAddress = configuration.getString(MBaaS.SERVER_ADDRESS);
+        String serviceAuthorize = serverAddress + "web/oauth2/authorize";
+        this.link = serverAddress + "web/oauth2/response";
         List<String> params = new ArrayList<>();
-        params.add("client_id=" + application.getMBaaSClientId());
+        params.add("client_id=" + configuration.getString(MBaaS.CLIENT_ID));
         params.add("state=" + UUID.randomUUID().toString());
         params.add("response_type=code");
 
@@ -84,23 +82,6 @@ public class LoginActivity extends AppCompatActivity {
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                MBaaSApplication application = null;
-                if (getApplication() instanceof MBaaSApplication) {
-                    application = (MBaaSApplication) getApplication();
-                }
-                if (application == null) {
-                    try {
-                        Class<Activity> clazz = (Class<Activity>) Class.forName(LoginActivity.this.activity);
-                        Intent intentActivity = new Intent(view.getContext(), clazz);
-                        intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        intentActivity.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_FAILURE);
-                        intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_MESSAGE, "sdk configuration failure");
-                        intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_ID, eventId);
-                        view.getContext().startActivity(intentActivity);
-                    } catch (ClassNotFoundException e) {
-                    }
-                    return true;
-                }
                 if (url != null && !"".equals(url) && url.startsWith(link)) {
                     Map<String, String> oauth2 = new HashMap<>();
                     String query = url.substring(link.length() + 1);

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.graphics.PorterDuff;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,8 +14,6 @@ import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptEx
 import com.angkorteam.mbaas.sdk.android.library.response.javascript.JavaScriptPaginationResponse;
 import com.google.gson.Gson;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -83,16 +80,11 @@ public abstract class MBaaSAdapter<T extends RecyclerView.ViewHolder> extends Re
         } else {
             this.layoutManager = null;
         }
-        MBaaSApplication application = null;
-        if (activity.getApplicationContext() instanceof MBaaSApplication) {
-            application = (MBaaSApplication) activity.getApplicationContext();
-        }
-        if (application != null) {
-            Map<String, Object> params = new HashMap<>();
-            params.put("pageNumber", pageNumber + 1);
-            Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost(this.javascript, params);
-            responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(EVENT_DISPLAY, this.activity, this.broadcastReceiver));
-        }
+        MBaaS mbaas = MBaaS.getInstance();
+        Map<String, Object> params = new HashMap<>();
+        params.put("pageNumber", pageNumber + 1);
+        Call<JavaScriptExecuteResponse> responseCall = mbaas.getClient().javascriptExecutePost(this.javascript, params);
+        responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(EVENT_DISPLAY, this.activity, this.broadcastReceiver));
     }
 
     @Override
@@ -176,16 +168,11 @@ public abstract class MBaaSAdapter<T extends RecyclerView.ViewHolder> extends Re
     private void loadMore() {
         items.put(items.size(), null);
         this.notifyItemInserted(items.size() - 1);
-        MBaaSApplication application = null;
-        if (activity.getApplicationContext() instanceof MBaaSApplication) {
-            application = (MBaaSApplication) activity.getApplicationContext();
-        }
-        if (application != null) {
-            Map<String, Object> params = new HashMap<>();
-            params.put("pageNumber", pageNumber + 1);
-            Call<JavaScriptExecuteResponse> responseCall = application.getMBaaSClient().javascriptExecutePost(this.javascript, params);
-            responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(EVENT_LOAD_MORE, this.activity, this.broadcastReceiver));
-        }
+        MBaaS mbaas = MBaaS.getInstance();
+        Map<String, Object> params = new HashMap<>();
+        params.put("pageNumber", pageNumber + 1);
+        Call<JavaScriptExecuteResponse> responseCall = mbaas.getClient().javascriptExecutePost(this.javascript, params);
+        responseCall.enqueue(new MBaaSCallback<JavaScriptExecuteResponse>(EVENT_LOAD_MORE, this.activity, this.broadcastReceiver));
     }
 
     @Override

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+    <entry key="senderId">799876230570</entry>
+    <entry key="serverAddress">http://pkayjava.ddns.net:9080/mbaas-server</entry>
+    <entry key="clientId">5ec7c501-27a6-4480-bda5-b53b37e32e12</entry>
+    <entry key="clientSecret">7af0e814-fd9b-48b0-bac7-f55b1e45ac0a</entry>
+    <entry key="category">Test</entry>
+    <entry key="alias">alias</entry>
+    <entry key="deviceType">Android Phone</entry>
+    <entry key="cacheSize">104857600</entry>
+
+</properties>

@@ -8,19 +8,14 @@ import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.angkorteam.mbaas.sdk.android.library.request.device.DeviceRegisterRequest;
-import com.angkorteam.mbaas.sdk.android.library.response.device.DeviceRegisterResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2AuthorizeResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2RefreshResponse;
-import com.google.android.gms.gcm.GcmPubSub;
-import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.google.android.gms.iid.InstanceID;
 import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.WeakHashMap;
 
-import retrofit2.*;
+import retrofit2.Call;
 
 /**
  * Created by socheat on 4/13/16.
@@ -63,18 +58,12 @@ public class MBaaSIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.i("MBaaS", "Service " + intent.getStringExtra(MBaaSIntentService.SERVICE));
-        MBaaSApplication application = null;
-        if (getApplication() instanceof MBaaSApplication) {
-            application = (MBaaSApplication) getApplication();
-        }
-        if (application == null) {
-            return;
-        }
+        MBaaS mbaas = MBaaS.getInstance();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         if (SERVICE_ACCESS_TOKEN.equals(intent.getStringExtra(MBaaSIntentService.SERVICE))) {
             String oauth2Code = intent.getStringExtra(MBaaSIntentService.OAUTH2_CODE);
             String oauth2State = intent.getStringExtra(MBaaSIntentService.OAUTH2_STATE);
-            MBaaSClient client = application.getMBaaSClient();
+            MBaaSClient client = mbaas.getClient();
             Call<OAuth2AuthorizeResponse> responseCall = client.oauth2Authorize(oauth2State, oauth2Code);
             try {
                 int eventId = intent.getIntExtra(NetworkBroadcastReceiver.EVENT_ID, -1);
@@ -114,7 +103,7 @@ public class MBaaSIntentService extends IntentService {
             } catch (ClassNotFoundException e) {
             }
         } else if (SERVICE_REFRESH_TOKEN.equals(intent.getStringExtra(MBaaSIntentService.SERVICE))) {
-            MBaaSClient client = application.getMBaaSClient();
+            MBaaSClient client = mbaas.getClient();
             String refreshToken = sharedPreferences.getString(MBaaSIntentService.REFRESH_TOKEN, "");
             Call<OAuth2RefreshResponse> responseCall = client.oauth2Refresh(refreshToken);
             retrofit2.Response<OAuth2RefreshResponse> response = null;
@@ -128,7 +117,7 @@ public class MBaaSIntentService extends IntentService {
             }
         } else if (SERVICE_GCM_TOKEN.equals(intent.getStringExtra(MBaaSIntentService.SERVICE))) {
             try {
-                MBaaSUtils.requestGcm(sharedPreferences, this, application);
+                MBaaSUtils.requestGcm(sharedPreferences, this, mbaas.getConfiguration());
             } catch (Throwable e) {
                 sharedPreferences.edit().putString(MBaaSIntentService.ACCESS_TOKEN, "").apply();
             }

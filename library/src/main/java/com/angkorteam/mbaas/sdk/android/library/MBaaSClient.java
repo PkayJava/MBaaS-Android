@@ -1,9 +1,8 @@
 package com.angkorteam.mbaas.sdk.android.library;
 
-import android.content.Context;
+import android.app.Application;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import com.angkorteam.mbaas.sdk.android.library.request.asset.AssetCreateRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.device.DeviceRegisterRequest;
@@ -21,13 +20,11 @@ import com.angkorteam.mbaas.sdk.android.library.response.monitor.MonitorTimeResp
 import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2AuthorizeResponse;
 import com.angkorteam.mbaas.sdk.android.library.response.oauth2.OAuth2RefreshResponse;
 import com.angkorteam.mbaas.sdk.android.library.retrofit.NetworkInterceptor;
-import com.google.android.gms.gcm.GcmPubSub;
-import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.google.android.gms.iid.InstanceID;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.io.IOException;
+import org.apache.commons.configuration.XMLPropertiesConfiguration;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -36,7 +33,6 @@ import java.util.concurrent.Executors;
 import bolts.Task;
 import okhttp3.Cache;
 import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -48,29 +44,26 @@ public class MBaaSClient {
 
     private static final String SDK_VERSION = "1.0.0";
 
-    private final Context context;
-
     private final SharedPreferences sharedPreferences;
 
     private final Gson gson;
 
     private final IService service;
 
-    private MBaaSApplication application;
+    private final XMLPropertiesConfiguration configuration;
 
-    public MBaaSClient(final MBaaSApplication application, final Context context) {
-        this.application = application;
-        this.context = context;
-        this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+    MBaaSClient(final Application application, final XMLPropertiesConfiguration configuration) {
+        this.configuration = configuration;
+        this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application);
 
         this.gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ").create();
-        Cache cache = new Cache(application.getCacheDir(), application.getCacheSize());
+        Cache cache = new Cache(application.getCacheDir(), configuration.getLong(MBaaS.CACHE_SIZE));
         OkHttpClient httpClient = new OkHttpClient.Builder()
-                .addInterceptor(new NetworkInterceptor(this.sharedPreferences, this.application.getMBaaSClientId(), this.application.getMBaaSClientSecret(), this.application.getMBaaSAppVersion(), SDK_VERSION))
+                .addInterceptor(new NetworkInterceptor(this.sharedPreferences, configuration.getString(MBaaS.CLIENT_ID), configuration.getString(MBaaS.CLIENT_SECRET), configuration.getString(MBaaS.APP_VERSION), SDK_VERSION))
                 .cache(cache)
                 .build();
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(this.application.getMBaaSAddress())
+                .baseUrl(configuration.getString(MBaaS.SERVER_ADDRESS))
                 .callbackExecutor(Task.BACKGROUND_EXECUTOR)
                 .addConverterFactory(GsonConverterFactory.create(this.gson))
                 .client(httpClient)
@@ -82,7 +75,7 @@ public class MBaaSClient {
             @Override
             public String call() throws Exception {
                 synchronized (NetworkInterceptor.LOCK) {
-                    return MBaaSUtils.requestGcm(sharedPreferences, context, application);
+                    return MBaaSUtils.requestGcm(sharedPreferences, application, configuration);
                 }
             }
         });
@@ -93,8 +86,8 @@ public class MBaaSClient {
     }
 
     public Call<OAuth2AuthorizeResponse> oauth2Authorize(String state, String code) {
-        String clientId = application.getMBaaSClientId();
-        String clientSecret = application.getMBaaSClientSecret();
+        String clientId = configuration.getString(MBaaS.CLIENT_ID);
+        String clientSecret = configuration.getString(MBaaS.CLIENT_SECRET);
         String grantType = MBaaSIntentService.OAUTH2_GRANT_TYPE_AUTHORIZATION_CODE;
         String redirectUri = null;
         return this.service.oauth2Authorize(clientId, clientSecret, grantType, redirectUri, state, code);

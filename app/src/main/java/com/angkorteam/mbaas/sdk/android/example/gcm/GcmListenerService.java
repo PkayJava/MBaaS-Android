@@ -11,6 +11,7 @@ import android.support.v4.app.NotificationCompat;
 import com.angkorteam.mbaas.sdk.android.example.Application;
 import com.angkorteam.mbaas.sdk.android.example.MainActivity;
 import com.angkorteam.mbaas.sdk.android.example.R;
+import com.angkorteam.mbaas.sdk.android.library.MBaaS;
 
 import java.io.IOException;
 import java.util.Map;
@@ -46,9 +47,9 @@ public class GcmListenerService extends com.angkorteam.mbaas.sdk.android.library
 
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
 
-        Application application = (Application) getApplication();
+        MBaaS mbaas = MBaaS.getInstance();
         try {
-            application.getMBaaSClient().sendMetrics(messageId).execute();
+            mbaas.getClient().sendMetrics(messageId).execute();
         } catch (Throwable e) {
             e.printStackTrace();
         }

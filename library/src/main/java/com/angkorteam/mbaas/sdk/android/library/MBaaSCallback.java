@@ -47,25 +47,20 @@ public class MBaaSCallback<T extends Response> implements Callback<T> {
                 MBaaSIntentService.REVOKED.put(eventId, call.clone());
                 LocalBroadcastManager.getInstance(this.activity).sendBroadcast(intent);
             } else if (body.getHttpCode() == 423) {
-                MBaaSApplication application = null;
-                if (this.activity.getApplicationContext() instanceof MBaaSApplication) {
-                    application = (MBaaSApplication) this.activity.getApplicationContext();
-                }
-                if (application != null) {
-                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.activity);
-                    String refreshToken = sharedPreferences.getString(MBaaSIntentService.REFRESH_TOKEN, "");
-                    Call<OAuth2RefreshResponse> responseCall = application.getMBaaSClient().oauth2Refresh(refreshToken);
-                    try {
-                        retrofit2.Response<OAuth2RefreshResponse> responseBody = responseCall.execute();
-                        sharedPreferences.edit().putString(MBaaSIntentService.ACCESS_TOKEN, responseBody.body().getAccessToken()).apply();
-                        call.clone().enqueue(this);
-                    } catch (IOException e) {
-                        Intent intent = new Intent(broadcastReceiver.getUuid());
-                        intent.putExtra(NetworkBroadcastReceiver.EVENT_ID, this.eventId);
-                        intent.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_FAILURE);
-                        intent.putExtra(NetworkBroadcastReceiver.EVENT_MESSAGE, e.getMessage());
-                        LocalBroadcastManager.getInstance(this.activity).sendBroadcast(intent);
-                    }
+                MBaaS mbaas = MBaaS.getInstance();
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.activity);
+                String refreshToken = sharedPreferences.getString(MBaaSIntentService.REFRESH_TOKEN, "");
+                Call<OAuth2RefreshResponse> responseCall = mbaas.getClient().oauth2Refresh(refreshToken);
+                try {
+                    retrofit2.Response<OAuth2RefreshResponse> responseBody = responseCall.execute();
+                    sharedPreferences.edit().putString(MBaaSIntentService.ACCESS_TOKEN, responseBody.body().getAccessToken()).apply();
+                    call.clone().enqueue(this);
+                } catch (IOException e) {
+                    Intent intent = new Intent(broadcastReceiver.getUuid());
+                    intent.putExtra(NetworkBroadcastReceiver.EVENT_ID, this.eventId);
+                    intent.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_FAILURE);
+                    intent.putExtra(NetworkBroadcastReceiver.EVENT_MESSAGE, e.getMessage());
+                    LocalBroadcastManager.getInstance(this.activity).sendBroadcast(intent);
                 }
             } else if (body.getHttpCode() == 500) {
                 Intent intent = new Intent(broadcastReceiver.getUuid());
