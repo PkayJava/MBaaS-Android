@@ -32,6 +32,7 @@ public class MBaaSIntentService extends IntentService {
     public static final String SERVICE_GCM_TOKEN = "gcmToken";
 
     public static final String GCM_TOKEN = "gcmToken";
+    public static final String LOGIN = "login";
     public static final String ACCESS_TOKEN = "accessToken";
     public static final String REFRESH_TOKEN = "refreshToken";
 
@@ -75,6 +76,8 @@ public class MBaaSIntentService extends IntentService {
                     OAuth2AuthorizeResponse responseBody = response.body();
                     sharedPreferences.edit().putString(MBaaSIntentService.ACCESS_TOKEN, responseBody.getAccessToken()).apply();
                     sharedPreferences.edit().putString(MBaaSIntentService.REFRESH_TOKEN, responseBody.getRefreshToken()).apply();
+                    sharedPreferences.edit().putString(MBaaSIntentService.LOGIN, responseBody.getLogin()).apply();
+                    client.initXMPP(responseBody.getLogin(), responseBody.getAccessToken());
                     if (REVOKED.get(eventId) != null) {
                         try {
                             retrofit2.Response res = REVOKED.get(eventId).execute();

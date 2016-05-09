@@ -55,17 +55,6 @@ public class LoginActivity extends AppCompatActivity {
         this.activity = getIntent().getStringExtra(NetworkBroadcastReceiver.EVENT_ACTIVITY);
         this.eventId = getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT_ID, -1);
 
-        try {
-            Class<Activity> clazz = (Class<Activity>) Class.forName(LoginActivity.this.activity);
-            Intent intentActivity = new Intent(this, clazz);
-            intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_FAILURE);
-            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_MESSAGE, "sdk configuration failure");
-            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_ID, eventId);
-            this.startActivity(intentActivity);
-        } catch (ClassNotFoundException e) {
-        }
-
         MBaaS mbaas = MBaaS.getInstance();
         XMLPropertiesConfiguration configuration = mbaas.getConfiguration();
 

@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
         MBaaS mbaas = MBaaS.getInstance();
         MBaaSClient client = mbaas.getClient();
 
-        client.securityLogin("admin", "admin").enqueue(new MBaaSCallback<SecurityLoginResponse>(1002, this, broadcastReceiver));
+        // client.securityLogin("admin", "admin").enqueue(new MBaaSCallback<SecurityLoginResponse>(1002, this, broadcastReceiver));
 
         mbaasAdapter = new MBaaSAdapter<DataViewHolder>(this, R.layout.data_row, this.mbaasAdapterBroadcastReceiver, "khmer_now", recyclerView) {
             @Override

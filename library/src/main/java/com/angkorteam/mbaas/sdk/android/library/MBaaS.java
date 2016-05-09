@@ -9,6 +9,12 @@ import android.util.AndroidRuntimeException;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
 import org.apache.commons.io.IOUtils;
+import org.jivesoftware.smack.AbstractXMPPConnection;
+import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.im.SmackImInitializer;
+import org.jivesoftware.smack.initializer.SmackInitializer;
+import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 
 import java.io.IOException;
 import java.io.InputStream;

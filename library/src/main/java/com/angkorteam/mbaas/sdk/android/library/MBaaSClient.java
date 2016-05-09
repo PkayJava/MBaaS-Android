@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.angkorteam.mbaas.sdk.android.library.netty.ClientInitializer;
 import com.angkorteam.mbaas.sdk.android.library.request.asset.AssetCreateRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.device.DeviceRegisterRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.file.FileCreateRequest;
@@ -28,6 +29,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
+import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +37,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
 import bolts.Task;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import okhttp3.Cache;
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
@@ -44,7 +50,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 /**
  * Created by socheat on 4/6/16.
  */
-public class MBaaSClient {
+public final class MBaaSClient {
 
     private static final String SDK_VERSION = "1.0.0";
 
@@ -56,9 +62,14 @@ public class MBaaSClient {
 
     private final XMLPropertiesConfiguration configuration;
 
+    private XMPPTCPConnection connection;
+
+    private boolean xmpp = false;
+
     MBaaSClient(final Application application, final XMLPropertiesConfiguration configuration) {
         this.configuration = configuration;
         this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application);
+        this.xmpp = false;
 
         this.gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ").create();
         Cache cache = new Cache(application.getCacheDir(), configuration.getLong(MBaaS.CACHE_SIZE));
@@ -83,9 +94,22 @@ public class MBaaSClient {
                 }
             }
         });
+        if (!"".equals(sharedPreferences.getString(MBaaSIntentService.LOGIN, "")) && !"".equals(sharedPreferences.getString(MBaaSIntentService.ACCESS_TOKEN, ""))) {
+            Task.callInBackground(new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    synchronized (NetworkInterceptor.LOCK) {
+                        String login = sharedPreferences.getString(MBaaSIntentService.LOGIN, "");
+                        String accessToken = sharedPreferences.getString(MBaaSIntentService.ACCESS_TOKEN, "");
+                        initXMPP(login, accessToken);
+                    }
+                    return null;
+                }
+            });
+        }
     }
 
-    public final Gson getGson() {
+    public Gson getGson() {
         return this.gson;
     }
 
@@ -95,6 +119,20 @@ public class MBaaSClient {
         String grantType = MBaaSIntentService.OAUTH2_GRANT_TYPE_AUTHORIZATION_CODE;
         String redirectUri = null;
         return this.service.oauth2Authorize(clientId, clientSecret, grantType, redirectUri, state, code);
+    }
+
+    public boolean initXMPP(String login, String accessToken) {
+        EventLoopGroup group = new NioEventLoopGroup();
+        Bootstrap clientBootstrap = new Bootstrap();
+        clientBootstrap.group(group);
+        clientBootstrap.channel(NioSocketChannel.class);
+        clientBootstrap.handler(new ClientInitializer());
+        clientBootstrap.connect("192.168.1.115", 5222);
+        return this.xmpp;
+    }
+
+    public boolean hasXMPP() {
+        return this.xmpp;
     }
 
     public Call<DeviceRegisterResponse> deviceRegister(DeviceRegisterRequest request) {
