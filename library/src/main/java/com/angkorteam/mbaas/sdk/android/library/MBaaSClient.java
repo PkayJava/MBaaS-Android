@@ -1,9 +1,14 @@
 package com.angkorteam.mbaas.sdk.android.library;
 
+import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 
+import com.angkorteam.mbaas.sdk.android.library.netty.ClientHandler;
 import com.angkorteam.mbaas.sdk.android.library.netty.ClientInitializer;
 import com.angkorteam.mbaas.sdk.android.library.request.asset.AssetCreateRequest;
 import com.angkorteam.mbaas.sdk.android.library.request.device.DeviceRegisterRequest;
@@ -29,7 +34,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
-import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +42,9 @@ import java.util.concurrent.Executors;
 
 import bolts.Task;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -62,14 +69,16 @@ public final class MBaaSClient {
 
     private final XMLPropertiesConfiguration configuration;
 
-    private XMPPTCPConnection connection;
+    private Channel channel;
 
-    private boolean xmpp = false;
+    private CommunicationBroadcastReceiver broadcastReceiver;
+
+    private final Context context;
 
     MBaaSClient(final Application application, final XMLPropertiesConfiguration configuration) {
+        this.context = application;
         this.configuration = configuration;
         this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application);
-        this.xmpp = false;
 
         this.gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ").create();
         Cache cache = new Cache(application.getCacheDir(), configuration.getLong(MBaaS.CACHE_SIZE));
@@ -94,14 +103,12 @@ public final class MBaaSClient {
                 }
             }
         });
-        if (!"".equals(sharedPreferences.getString(MBaaSIntentService.LOGIN, "")) && !"".equals(sharedPreferences.getString(MBaaSIntentService.ACCESS_TOKEN, ""))) {
+        if (!"".equals(sharedPreferences.getString(MBaaSIntentService.ACCESS_TOKEN, ""))) {
             Task.callInBackground(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
                     synchronized (NetworkInterceptor.LOCK) {
-                        String login = sharedPreferences.getString(MBaaSIntentService.LOGIN, "");
-                        String accessToken = sharedPreferences.getString(MBaaSIntentService.ACCESS_TOKEN, "");
-                        initXMPP(login, accessToken);
+                        channel = initCommunication();
                     }
                     return null;
                 }
@@ -121,18 +128,19 @@ public final class MBaaSClient {
         return this.service.oauth2Authorize(clientId, clientSecret, grantType, redirectUri, state, code);
     }
 
-    public boolean initXMPP(String login, String accessToken) {
+    protected Channel initCommunication() {
         EventLoopGroup group = new NioEventLoopGroup();
         Bootstrap clientBootstrap = new Bootstrap();
+        clientBootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         clientBootstrap.group(group);
         clientBootstrap.channel(NioSocketChannel.class);
-        clientBootstrap.handler(new ClientInitializer());
-        clientBootstrap.connect("192.168.1.115", 5222);
-        return this.xmpp;
+        clientBootstrap.handler(new ClientInitializer(this.context, this.sharedPreferences));
+        Channel channel = clientBootstrap.connect("192.168.1.103", 5222).channel();
+        return channel;
     }
 
-    public boolean hasXMPP() {
-        return this.xmpp;
+    public boolean hasCommunication() {
+        return this.channel != null && this.channel.isOpen() && this.channel.isWritable();
     }
 
     public Call<DeviceRegisterResponse> deviceRegister(DeviceRegisterRequest request) {
@@ -226,4 +234,27 @@ public final class MBaaSClient {
         return this.service.monitorTime();
     }
 
+    public void sendPrivateMessage(String userId, String message) {
+        if (hasCommunication()) {
+            this.channel.writeAndFlush(ClientHandler.COMMAND_MESSAGE_PRIVATE + ClientHandler.SEPARATOR + userId + ClientHandler.SEPARATOR + message);
+        }
+    }
+
+    public void sendGroupMessage(String conversationId, String message) {
+        if (hasCommunication()) {
+            this.channel.writeAndFlush(ClientHandler.COMMAND_MESSAGE_GROUP + ClientHandler.SEPARATOR + conversationId + ClientHandler.SEPARATOR + message);
+        }
+    }
+
+    public void unregisterReceiver(Context context) {
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(context);
+        manager.unregisterReceiver(this.broadcastReceiver);
+        this.broadcastReceiver = null;
+    }
+
+    public void registerReceiver(Context context, CommunicationBroadcastReceiver.CommunicationReceiver receiver) {
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(context);
+        this.broadcastReceiver = new CommunicationBroadcastReceiver(receiver);
+        manager.registerReceiver(broadcastReceiver, new IntentFilter(CommunicationBroadcastReceiver.class.getName()));
+    }
 }

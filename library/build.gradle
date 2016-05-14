@@ -37,20 +37,17 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.3.0'
     compile 'com.android.support:recyclerview-v7:23.3.0'
     compile 'com.google.android.gms:play-services-gcm:8.4.0'
-    compile 'com.squareup.retrofit2:retrofit:2.0.1'
-    compile 'com.squareup.retrofit2:converter-gson:2.0.1'
+    compile 'com.squareup.retrofit2:retrofit:2.0.2'
+    compile 'com.squareup.retrofit2:converter-gson:2.0.2'
     compile 'com.google.code.gson:gson:2.6.2'
     compile 'com.squareup.okio:okio:1.6.0'
     compile('commons-configuration:commons-configuration:1.10') {
         exclude group: 'commons-logging', module: 'commons-logging'
     }
-
     compile 'com.squareup.okhttp3:logging-interceptor:3.2.0'
     compile 'com.squareup.okhttp3:okhttp:3.2.0'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'commons-io:commons-io:2.4'
-    compile 'org.igniterealtime.smack:smack-android:4.1.7'
-    compile 'org.igniterealtime.smack:smack-tcp:4.1.7'
     compile 'io.netty:netty-all:4.0.36.Final'
 
     // provided 'com.facebook.android:facebook-android-sdk:4.9.0'

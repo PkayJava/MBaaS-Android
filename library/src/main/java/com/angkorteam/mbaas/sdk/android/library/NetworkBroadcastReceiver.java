@@ -25,11 +25,11 @@ public class NetworkBroadcastReceiver extends BroadcastReceiver {
     public static final String EVENT_MESSAGE = "event_message";
     public static final String EVENT_ACTIVITY = "event_activity";
 
-    private NetworkReceiver networkReceiver;
+    private NetworkReceiver receiver;
 
     public NetworkBroadcastReceiver(NetworkReceiver networkReceiver) {
         this.uuid = UUID.randomUUID().toString();
-        this.networkReceiver = networkReceiver;
+        this.receiver = networkReceiver;
     }
 
     public NetworkBroadcastReceiver() {
@@ -37,21 +37,21 @@ public class NetworkBroadcastReceiver extends BroadcastReceiver {
     }
 
     public void setNetworkReceiver(NetworkReceiver networkReceiver) {
-        this.networkReceiver = networkReceiver;
+        this.receiver = networkReceiver;
     }
 
     @Override
     public final void onReceive(Context context, Intent intent) {
-        if (this.networkReceiver != null) {
+        if (this.receiver != null) {
             int event = intent.getIntExtra(EVENT, -1);
             if (event == EVENT_RESPONSE) {
                 int eventId = intent.getIntExtra(EVENT_ID, -1);
                 String json = intent.getStringExtra(EVENT_JSON);
-                this.networkReceiver.onResponse(eventId, json);
+                this.receiver.onResponse(eventId, json);
             } else if (event == EVENT_FAILURE) {
                 int eventId = intent.getIntExtra(EVENT_ID, -1);
                 String message = intent.getStringExtra(EVENT_MESSAGE);
-                this.networkReceiver.onFailure(eventId, message);
+                this.receiver.onFailure(eventId, message);
             } else if (event == EVENT_LOGIN) {
                 int eventId = intent.getIntExtra(EVENT_ID, -1);
                 Intent intentActivity = new Intent(context, LoginActivity.class);

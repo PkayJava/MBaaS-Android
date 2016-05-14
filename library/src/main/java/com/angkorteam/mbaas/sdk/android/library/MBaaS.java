@@ -6,15 +6,8 @@ import android.content.res.Resources;
 import android.os.Build;
 import android.util.AndroidRuntimeException;
 
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
 import org.apache.commons.io.IOUtils;
-import org.jivesoftware.smack.AbstractXMPPConnection;
-import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.im.SmackImInitializer;
-import org.jivesoftware.smack.initializer.SmackInitializer;
-import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -78,7 +71,7 @@ public class MBaaS {
         try {
             inputStream = application.getResources().openRawResource(application.getResources().getIdentifier(RESOURCE, "raw", application.getPackageName()));
         } catch (Resources.NotFoundException e) {
-            throw new AndroidRuntimeException("row/mbaas.xml is not found");
+            throw new AndroidRuntimeException("raw/mbaas.xml is not found");
         }
         Properties properties = null;
         if (inputStream != null) {

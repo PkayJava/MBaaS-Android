@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.angkorteam.mbaas.sdk.android.library.CommunicationBroadcastReceiver;
 import com.angkorteam.mbaas.sdk.android.library.MBaaS;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSAdapter;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSCallback;
@@ -23,7 +24,7 @@ import com.google.android.gms.common.GoogleApiAvailability;
 
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements NetworkBroadcastReceiver.NetworkReceiver {
+public class MainActivity extends AppCompatActivity implements NetworkBroadcastReceiver.NetworkReceiver, CommunicationBroadcastReceiver.CommunicationReceiver {
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     public static final String TAG = "MBaaS";
@@ -62,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
         }
 
         MBaaS mbaas = MBaaS.getInstance();
-        MBaaSClient client = mbaas.getClient();
+        mbaas.getClient().registerReceiver(this, this);
 
         // client.securityLogin("admin", "admin").enqueue(new MBaaSCallback<SecurityLoginResponse>(1002, this, broadcastReceiver));
 
@@ -156,6 +157,11 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
     @Override
     public void onFailure(int eventId, String message) {
         Log.i("MBaaS", "onFailure " + eventId + " " + message);
+    }
+
+    @Override
+    public void onMessage(String fromUserId, String message) {
+        Log.i("MBaaS", fromUserId + " " + message);
     }
 
     @Override
