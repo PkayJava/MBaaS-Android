@@ -9,7 +9,7 @@ import java.util.UUID;
 /**
  * Created by socheat on 4/15/16.
  */
-public class NetworkBroadcastReceiver extends BroadcastReceiver {
+public class HttpBroadcastReceiver extends BroadcastReceiver {
 
     private final String uuid;
 
@@ -25,19 +25,19 @@ public class NetworkBroadcastReceiver extends BroadcastReceiver {
     public static final String EVENT_MESSAGE = "event_message";
     public static final String EVENT_ACTIVITY = "event_activity";
 
-    private NetworkReceiver receiver;
+    private HttpReceiver receiver;
 
-    public NetworkBroadcastReceiver(NetworkReceiver networkReceiver) {
+    public HttpBroadcastReceiver(HttpReceiver httpReceiver) {
         this.uuid = UUID.randomUUID().toString();
-        this.receiver = networkReceiver;
+        this.receiver = httpReceiver;
     }
 
-    public NetworkBroadcastReceiver() {
+    public HttpBroadcastReceiver() {
         this.uuid = UUID.randomUUID().toString();
     }
 
-    public void setNetworkReceiver(NetworkReceiver networkReceiver) {
-        this.receiver = networkReceiver;
+    public void setNetworkReceiver(HttpReceiver httpReceiver) {
+        this.receiver = httpReceiver;
     }
 
     @Override
@@ -67,7 +67,7 @@ public class NetworkBroadcastReceiver extends BroadcastReceiver {
         return uuid;
     }
 
-    public interface NetworkReceiver {
+    public interface HttpReceiver {
 
         void onResponse(int operationId, String json);
 

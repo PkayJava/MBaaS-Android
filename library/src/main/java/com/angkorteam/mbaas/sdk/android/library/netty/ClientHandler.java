@@ -6,9 +6,12 @@ import android.content.SharedPreferences;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.angkorteam.mbaas.sdk.android.library.CommunicationBroadcastReceiver;
+import com.angkorteam.mbaas.sdk.android.library.MBaaS;
+import com.angkorteam.mbaas.sdk.android.library.SocketBroadcastReceiver;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSIntentService;
-import com.angkorteam.mbaas.sdk.android.library.NetworkBroadcastReceiver;
+import com.angkorteam.mbaas.sdk.android.library.command.Authenticate;
+import com.angkorteam.mbaas.sdk.android.library.command.MessageNotification;
+import com.google.gson.Gson;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -44,9 +47,12 @@ public class ClientHandler extends SimpleChannelInboundHandler<String> {
 
     private final LocalBroadcastManager manager;
 
+    private final Gson gson;
+
     public ClientHandler(Context context, SharedPreferences preferences) {
         this.preferences = preferences;
         this.manager = LocalBroadcastManager.getInstance(context);
+        this.gson = MBaaS.getInstance().getClient().getGson();
     }
 
     @Override
@@ -58,7 +64,9 @@ public class ClientHandler extends SimpleChannelInboundHandler<String> {
     public void channelActive(ChannelHandlerContext context) throws Exception {
         Log.i("MBaaS", "channelActive");
         String accessToken = this.preferences.getString(MBaaSIntentService.ACCESS_TOKEN, "");
-        context.writeAndFlush(COMMAND_AUTHENTICATE + SEPARATOR + accessToken);
+        Authenticate authenticate = new Authenticate();
+        authenticate.setAccessToken(accessToken);
+        context.writeAndFlush(COMMAND_AUTHENTICATE + SEPARATOR + this.gson.toJson(authenticate));
     }
 
     @Override
@@ -75,14 +83,12 @@ public class ClientHandler extends SimpleChannelInboundHandler<String> {
             }
         }
         String command = buffer.toString();
+        String json = msg.substring(index);
         if (COMMAND_MESSAGE_NOTIFICATION.equals(command)) {
-            String extra = msg.substring(index);
-            int i = extra.indexOf(SEPARATOR);
-            String fromUserId = extra.substring(0, i);
-            String message = extra.substring(i + 1);
-            Intent intent = new Intent(CommunicationBroadcastReceiver.class.getName());
-            intent.putExtra(CommunicationBroadcastReceiver.FROM_USER_ID, fromUserId);
-            intent.putExtra(CommunicationBroadcastReceiver.MESSAGE, message);
+            MessageNotification messageNotification = this.gson.fromJson(json, MessageNotification.class);
+            Intent intent = new Intent(SocketBroadcastReceiver.class.getName());
+            intent.putExtra(SocketBroadcastReceiver.USER_ID, messageNotification.getUserId());
+            intent.putExtra(SocketBroadcastReceiver.MESSAGE, messageNotification.getMessage());
             manager.sendBroadcast(intent);
         }
         Log.i("MBaaS", msg);

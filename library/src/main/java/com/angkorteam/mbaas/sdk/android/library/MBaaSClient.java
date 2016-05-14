@@ -1,6 +1,5 @@
 package com.angkorteam.mbaas.sdk.android.library;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.IntentFilter;
@@ -8,6 +7,8 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 
+import com.angkorteam.mbaas.sdk.android.library.command.MessageGroup;
+import com.angkorteam.mbaas.sdk.android.library.command.MessagePrivate;
 import com.angkorteam.mbaas.sdk.android.library.netty.ClientHandler;
 import com.angkorteam.mbaas.sdk.android.library.netty.ClientInitializer;
 import com.angkorteam.mbaas.sdk.android.library.request.asset.AssetCreateRequest;
@@ -71,7 +72,7 @@ public final class MBaaSClient {
 
     private Channel channel;
 
-    private CommunicationBroadcastReceiver broadcastReceiver;
+    private SocketBroadcastReceiver broadcastReceiver;
 
     private final Context context;
 
@@ -80,7 +81,7 @@ public final class MBaaSClient {
         this.configuration = configuration;
         this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application);
 
-        this.gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ").create();
+        this.gson = new GsonBuilder().disableHtmlEscaping().excludeFieldsWithoutExposeAnnotation().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ").create();
         Cache cache = new Cache(application.getCacheDir(), configuration.getLong(MBaaS.CACHE_SIZE));
         OkHttpClient httpClient = new OkHttpClient.Builder()
                 .addInterceptor(new NetworkInterceptor(this.sharedPreferences, configuration.getString(MBaaS.CLIENT_ID), configuration.getString(MBaaS.CLIENT_SECRET), configuration.getString(MBaaS.APP_VERSION), SDK_VERSION))
@@ -236,13 +237,19 @@ public final class MBaaSClient {
 
     public void sendPrivateMessage(String userId, String message) {
         if (hasCommunication()) {
-            this.channel.writeAndFlush(ClientHandler.COMMAND_MESSAGE_PRIVATE + ClientHandler.SEPARATOR + userId + ClientHandler.SEPARATOR + message);
+            MessagePrivate messagePrivate = new MessagePrivate();
+            messagePrivate.setUserId(userId);
+            messagePrivate.setMessage(message);
+            this.channel.writeAndFlush(ClientHandler.COMMAND_MESSAGE_PRIVATE + ClientHandler.SEPARATOR + this.gson.toJson(messagePrivate));
         }
     }
 
     public void sendGroupMessage(String conversationId, String message) {
         if (hasCommunication()) {
-            this.channel.writeAndFlush(ClientHandler.COMMAND_MESSAGE_GROUP + ClientHandler.SEPARATOR + conversationId + ClientHandler.SEPARATOR + message);
+            MessageGroup messageGroup = new MessageGroup();
+            messageGroup.setConversationId(conversationId);
+            messageGroup.setMessage(message);
+            this.channel.writeAndFlush(ClientHandler.COMMAND_MESSAGE_GROUP + ClientHandler.SEPARATOR + this.gson.toJson(messageGroup));
         }
     }
 
@@ -252,9 +259,9 @@ public final class MBaaSClient {
         this.broadcastReceiver = null;
     }
 
-    public void registerReceiver(Context context, CommunicationBroadcastReceiver.CommunicationReceiver receiver) {
+    public void registerReceiver(Context context, SocketBroadcastReceiver.SocketReceiver receiver) {
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(context);
-        this.broadcastReceiver = new CommunicationBroadcastReceiver(receiver);
-        manager.registerReceiver(broadcastReceiver, new IntentFilter(CommunicationBroadcastReceiver.class.getName()));
+        this.broadcastReceiver = new SocketBroadcastReceiver(receiver);
+        manager.registerReceiver(broadcastReceiver, new IntentFilter(SocketBroadcastReceiver.class.getName()));
     }
 }

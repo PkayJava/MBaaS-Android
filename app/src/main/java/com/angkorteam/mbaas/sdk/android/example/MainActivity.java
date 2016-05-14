@@ -10,21 +10,16 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-import com.angkorteam.mbaas.sdk.android.library.CommunicationBroadcastReceiver;
+import com.angkorteam.mbaas.sdk.android.library.SocketBroadcastReceiver;
 import com.angkorteam.mbaas.sdk.android.library.MBaaS;
 import com.angkorteam.mbaas.sdk.android.library.MBaaSAdapter;
-import com.angkorteam.mbaas.sdk.android.library.MBaaSCallback;
-import com.angkorteam.mbaas.sdk.android.library.MBaaSClient;
-import com.angkorteam.mbaas.sdk.android.library.NetworkBroadcastReceiver;
-import com.angkorteam.mbaas.sdk.android.library.request.file.FileCreateRequest;
-import com.angkorteam.mbaas.sdk.android.library.response.file.FileCreateResponse;
-import com.angkorteam.mbaas.sdk.android.library.response.security.SecurityLoginResponse;
+import com.angkorteam.mbaas.sdk.android.library.HttpBroadcastReceiver;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements NetworkBroadcastReceiver.NetworkReceiver, CommunicationBroadcastReceiver.CommunicationReceiver {
+public class MainActivity extends AppCompatActivity implements HttpBroadcastReceiver.HttpReceiver, SocketBroadcastReceiver.SocketReceiver {
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     public static final String TAG = "MBaaS";
@@ -32,8 +27,8 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
     private RecyclerView recyclerView;
     private LinearLayoutManager linearLayoutManager;
 
-    private NetworkBroadcastReceiver broadcastReceiver = null;
-    private NetworkBroadcastReceiver mbaasAdapterBroadcastReceiver = null;
+    private HttpBroadcastReceiver broadcastReceiver = null;
+    private HttpBroadcastReceiver mbaasAdapterBroadcastReceiver = null;
 
     private MBaaSAdapter<DataViewHolder> mbaasAdapter = null;
 
@@ -41,10 +36,12 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        broadcastReceiver = new NetworkBroadcastReceiver(this);
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
+
+        broadcastReceiver = new HttpBroadcastReceiver(this);
         manager.registerReceiver(broadcastReceiver, new IntentFilter(broadcastReceiver.getUuid()));
-        mbaasAdapterBroadcastReceiver = new NetworkBroadcastReceiver();
+
+        mbaasAdapterBroadcastReceiver = new HttpBroadcastReceiver();
         manager.registerReceiver(mbaasAdapterBroadcastReceiver, new IntentFilter(mbaasAdapterBroadcastReceiver.getUuid()));
 
         setContentView(R.layout.activity_main);
@@ -54,10 +51,10 @@ public class MainActivity extends AppCompatActivity implements NetworkBroadcastR
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
 
-        if (NetworkBroadcastReceiver.EVENT_UNAUTHORIZED == getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT, -1)) {
-            onUnauthorized(getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT_ID, -1));
-        } else if (NetworkBroadcastReceiver.EVENT_RESPONSE == getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT, -1)) {
-            onResponse(getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT_ID, -1), getIntent().getStringExtra(NetworkBroadcastReceiver.EVENT_JSON));
+        if (HttpBroadcastReceiver.EVENT_UNAUTHORIZED == getIntent().getIntExtra(HttpBroadcastReceiver.EVENT, -1)) {
+            onUnauthorized(getIntent().getIntExtra(HttpBroadcastReceiver.EVENT_ID, -1));
+        } else if (HttpBroadcastReceiver.EVENT_RESPONSE == getIntent().getIntExtra(HttpBroadcastReceiver.EVENT, -1)) {
+            onResponse(getIntent().getIntExtra(HttpBroadcastReceiver.EVENT_ID, -1), getIntent().getStringExtra(HttpBroadcastReceiver.EVENT_JSON));
         } else {
 
         }

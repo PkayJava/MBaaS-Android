@@ -11,7 +11,6 @@ import com.angkorteam.mbaas.sdk.android.library.response.security.SecurityLoginR
 import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.util.WeakHashMap;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -23,13 +22,13 @@ public class MBaaSCallback<T extends Response> implements Callback<T> {
 
     private final int eventId;
 
-    private final NetworkBroadcastReceiver broadcastReceiver;
+    private final HttpBroadcastReceiver broadcastReceiver;
 
     private final Activity activity;
 
     private final Gson gson;
 
-    public MBaaSCallback(int eventId, Activity activity, NetworkBroadcastReceiver broadcastReceiver) {
+    public MBaaSCallback(int eventId, Activity activity, HttpBroadcastReceiver broadcastReceiver) {
         this.eventId = eventId;
         this.gson = new Gson();
         this.broadcastReceiver = broadcastReceiver;
@@ -42,9 +41,9 @@ public class MBaaSCallback<T extends Response> implements Callback<T> {
         if (body != null) {
             if (body.getHttpCode() == 403 || body.getHttpCode() == 401) {
                 Intent intent = new Intent(broadcastReceiver.getUuid());
-                intent.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_LOGIN);
-                intent.putExtra(NetworkBroadcastReceiver.EVENT_ID, this.eventId);
-                intent.putExtra(NetworkBroadcastReceiver.EVENT_ACTIVITY, this.activity.getClass().getName());
+                intent.putExtra(HttpBroadcastReceiver.EVENT, HttpBroadcastReceiver.EVENT_LOGIN);
+                intent.putExtra(HttpBroadcastReceiver.EVENT_ID, this.eventId);
+                intent.putExtra(HttpBroadcastReceiver.EVENT_ACTIVITY, this.activity.getClass().getName());
                 MBaaSIntentService.REVOKED.put(eventId, call.clone());
                 LocalBroadcastManager.getInstance(this.activity).sendBroadcast(intent);
             } else if (body.getHttpCode() == 423) {
@@ -58,16 +57,16 @@ public class MBaaSCallback<T extends Response> implements Callback<T> {
                     call.clone().enqueue(this);
                 } catch (IOException e) {
                     Intent intent = new Intent(broadcastReceiver.getUuid());
-                    intent.putExtra(NetworkBroadcastReceiver.EVENT_ID, this.eventId);
-                    intent.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_FAILURE);
-                    intent.putExtra(NetworkBroadcastReceiver.EVENT_MESSAGE, e.getMessage());
+                    intent.putExtra(HttpBroadcastReceiver.EVENT_ID, this.eventId);
+                    intent.putExtra(HttpBroadcastReceiver.EVENT, HttpBroadcastReceiver.EVENT_FAILURE);
+                    intent.putExtra(HttpBroadcastReceiver.EVENT_MESSAGE, e.getMessage());
                     LocalBroadcastManager.getInstance(this.activity).sendBroadcast(intent);
                 }
             } else if (body.getHttpCode() == 500) {
                 Intent intent = new Intent(broadcastReceiver.getUuid());
-                intent.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_FAILURE);
-                intent.putExtra(NetworkBroadcastReceiver.EVENT_MESSAGE, body.getResult());
-                intent.putExtra(NetworkBroadcastReceiver.EVENT_ID, this.eventId);
+                intent.putExtra(HttpBroadcastReceiver.EVENT, HttpBroadcastReceiver.EVENT_FAILURE);
+                intent.putExtra(HttpBroadcastReceiver.EVENT_MESSAGE, body.getResult());
+                intent.putExtra(HttpBroadcastReceiver.EVENT_ID, this.eventId);
                 LocalBroadcastManager.getInstance(this.activity).sendBroadcast(intent);
             } else {
                 String httpUrl = call.request().url().toString();
@@ -80,22 +79,22 @@ public class MBaaSCallback<T extends Response> implements Callback<T> {
                     }
                 }
                 Intent intent = new Intent(broadcastReceiver.getUuid());
-                intent.putExtra(NetworkBroadcastReceiver.EVENT_ID, this.eventId);
-                intent.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_RESPONSE);
-                intent.putExtra(NetworkBroadcastReceiver.EVENT_JSON, gson.toJson(body));
+                intent.putExtra(HttpBroadcastReceiver.EVENT_ID, this.eventId);
+                intent.putExtra(HttpBroadcastReceiver.EVENT, HttpBroadcastReceiver.EVENT_RESPONSE);
+                intent.putExtra(HttpBroadcastReceiver.EVENT_JSON, gson.toJson(body));
                 LocalBroadcastManager.getInstance(this.activity).sendBroadcast(intent);
             }
         } else {
             if (response.code() == 200) {
                 Intent intent = new Intent(broadcastReceiver.getUuid());
-                intent.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_RESPONSE);
-                intent.putExtra(NetworkBroadcastReceiver.EVENT_ID, this.eventId);
+                intent.putExtra(HttpBroadcastReceiver.EVENT, HttpBroadcastReceiver.EVENT_RESPONSE);
+                intent.putExtra(HttpBroadcastReceiver.EVENT_ID, this.eventId);
                 LocalBroadcastManager.getInstance(this.activity).sendBroadcast(intent);
             } else {
                 Intent intent = new Intent(broadcastReceiver.getUuid());
-                intent.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_FAILURE);
-                intent.putExtra(NetworkBroadcastReceiver.EVENT_MESSAGE, response.message());
-                intent.putExtra(NetworkBroadcastReceiver.EVENT_ID, this.eventId);
+                intent.putExtra(HttpBroadcastReceiver.EVENT, HttpBroadcastReceiver.EVENT_FAILURE);
+                intent.putExtra(HttpBroadcastReceiver.EVENT_MESSAGE, response.message());
+                intent.putExtra(HttpBroadcastReceiver.EVENT_ID, this.eventId);
                 LocalBroadcastManager.getInstance(this.activity).sendBroadcast(intent);
             }
         }
@@ -104,9 +103,9 @@ public class MBaaSCallback<T extends Response> implements Callback<T> {
     @Override
     public final void onFailure(final Call<T> call, final Throwable t) {
         Intent intent = new Intent(broadcastReceiver.getUuid());
-        intent.putExtra(NetworkBroadcastReceiver.EVENT_ID, this.eventId);
-        intent.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_FAILURE);
-        intent.putExtra(NetworkBroadcastReceiver.EVENT_MESSAGE, t.getMessage());
+        intent.putExtra(HttpBroadcastReceiver.EVENT_ID, this.eventId);
+        intent.putExtra(HttpBroadcastReceiver.EVENT, HttpBroadcastReceiver.EVENT_FAILURE);
+        intent.putExtra(HttpBroadcastReceiver.EVENT_MESSAGE, t.getMessage());
         LocalBroadcastManager.getInstance(this.activity).sendBroadcast(intent);
     }
 }

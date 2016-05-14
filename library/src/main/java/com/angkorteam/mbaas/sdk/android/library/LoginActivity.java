@@ -32,15 +32,15 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString(NetworkBroadcastReceiver.EVENT_ACTIVITY, this.activity);
-        outState.putInt(NetworkBroadcastReceiver.EVENT_ID, this.eventId);
+        outState.putString(HttpBroadcastReceiver.EVENT_ACTIVITY, this.activity);
+        outState.putInt(HttpBroadcastReceiver.EVENT_ID, this.eventId);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        this.activity = savedInstanceState.getString(NetworkBroadcastReceiver.EVENT_ACTIVITY);
-        this.eventId = savedInstanceState.getInt(NetworkBroadcastReceiver.EVENT_ID);
+        this.activity = savedInstanceState.getString(HttpBroadcastReceiver.EVENT_ACTIVITY);
+        this.eventId = savedInstanceState.getInt(HttpBroadcastReceiver.EVENT_ID);
     }
 
     @Override
@@ -52,8 +52,8 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        this.activity = getIntent().getStringExtra(NetworkBroadcastReceiver.EVENT_ACTIVITY);
-        this.eventId = getIntent().getIntExtra(NetworkBroadcastReceiver.EVENT_ID, -1);
+        this.activity = getIntent().getStringExtra(HttpBroadcastReceiver.EVENT_ACTIVITY);
+        this.eventId = getIntent().getIntExtra(HttpBroadcastReceiver.EVENT_ID, -1);
 
         MBaaS mbaas = MBaaS.getInstance();
         XMLPropertiesConfiguration configuration = mbaas.getConfiguration();
@@ -86,8 +86,8 @@ public class LoginActivity extends AppCompatActivity {
                             Class<Activity> clazz = (Class<Activity>) Class.forName(LoginActivity.this.activity);
                             Intent intentActivity = new Intent(view.getContext(), clazz);
                             intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_UNAUTHORIZED);
-                            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_ID, eventId);
+                            intentActivity.putExtra(HttpBroadcastReceiver.EVENT, HttpBroadcastReceiver.EVENT_UNAUTHORIZED);
+                            intentActivity.putExtra(HttpBroadcastReceiver.EVENT_ID, eventId);
                             view.getContext().startActivity(intentActivity);
                         } catch (ClassNotFoundException e) {
                         }
@@ -96,8 +96,8 @@ public class LoginActivity extends AppCompatActivity {
                         serviceIntent.putExtra(MBaaSIntentService.SERVICE, MBaaSIntentService.SERVICE_ACCESS_TOKEN);
                         serviceIntent.putExtra(MBaaSIntentService.OAUTH2_CODE, oauth2.get(MBaaSIntentService.OAUTH2_CODE));
                         serviceIntent.putExtra(MBaaSIntentService.OAUTH2_STATE, oauth2.get(MBaaSIntentService.OAUTH2_STATE));
-                        serviceIntent.putExtra(NetworkBroadcastReceiver.EVENT_ACTIVITY, activity);
-                        serviceIntent.putExtra(NetworkBroadcastReceiver.EVENT_ID, eventId);
+                        serviceIntent.putExtra(HttpBroadcastReceiver.EVENT_ACTIVITY, activity);
+                        serviceIntent.putExtra(HttpBroadcastReceiver.EVENT_ID, eventId);
                         startService(serviceIntent);
                     }
                     return true;

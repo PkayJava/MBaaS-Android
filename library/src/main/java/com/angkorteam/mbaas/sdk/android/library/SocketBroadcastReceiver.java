@@ -7,21 +7,21 @@ import android.content.Intent;
 /**
  * Created by socheat on 5/14/16.
  */
-public class CommunicationBroadcastReceiver extends BroadcastReceiver {
+public class SocketBroadcastReceiver extends BroadcastReceiver {
 
-    public static final String FROM_USER_ID = "from-user-id";
+    public static final String USER_ID = "userId";
     public static final String MESSAGE = "message";
 
-    private CommunicationReceiver receiver;
+    private SocketReceiver receiver;
 
-    public CommunicationBroadcastReceiver(CommunicationReceiver receiver) {
+    public SocketBroadcastReceiver(SocketReceiver receiver) {
         this.receiver = receiver;
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
         if (this.receiver != null) {
-            String fromUserId = intent.getStringExtra(FROM_USER_ID);
+            String fromUserId = intent.getStringExtra(USER_ID);
             String message = intent.getStringExtra(MESSAGE);
             this.receiver.onMessage(fromUserId, message);
         }
@@ -30,9 +30,9 @@ public class CommunicationBroadcastReceiver extends BroadcastReceiver {
     /**
      * Created by socheat on 5/14/16.
      */
-    public interface CommunicationReceiver {
+    public interface SocketReceiver {
 
-        void onMessage(String fromUserId, String message);
+        void onMessage(String userId, String message);
 
     }
 }

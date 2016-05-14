@@ -23,7 +23,7 @@ import retrofit2.Call;
 /**
  * Created by socheat on 4/16/16.
  */
-public abstract class MBaaSAdapter<T extends RecyclerView.ViewHolder> extends RecyclerView.Adapter implements NetworkBroadcastReceiver.NetworkReceiver {
+public abstract class MBaaSAdapter<T extends RecyclerView.ViewHolder> extends RecyclerView.Adapter implements HttpBroadcastReceiver.HttpReceiver {
 
     public static final int VIEW_ITEM = 1;
     public static final int VIEW_PROGRESS = 0;
@@ -42,7 +42,7 @@ public abstract class MBaaSAdapter<T extends RecyclerView.ViewHolder> extends Re
     private final LinearLayoutManager layoutManager;
     private final Activity activity;
     private final String javascript;
-    private final NetworkBroadcastReceiver broadcastReceiver;
+    private final HttpBroadcastReceiver broadcastReceiver;
     private long currentPosition;
 
     private int EVENT_DISPLAY = 1;
@@ -64,7 +64,7 @@ public abstract class MBaaSAdapter<T extends RecyclerView.ViewHolder> extends Re
         }
     };
 
-    public MBaaSAdapter(Activity activity, int resourceId, NetworkBroadcastReceiver broadcastReceiver, String javascript, RecyclerView recyclerView) {
+    public MBaaSAdapter(Activity activity, int resourceId, HttpBroadcastReceiver broadcastReceiver, String javascript, RecyclerView recyclerView) {
         this.activity = activity;
         this.resourceId = resourceId;
         this.javascript = javascript;

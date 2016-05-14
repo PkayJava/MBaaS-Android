@@ -67,8 +67,8 @@ public class MBaaSIntentService extends IntentService {
             MBaaSClient client = mbaas.getClient();
             Call<OAuth2AuthorizeResponse> responseCall = client.oauth2Authorize(oauth2State, oauth2Code);
             try {
-                int eventId = intent.getIntExtra(NetworkBroadcastReceiver.EVENT_ID, -1);
-                String activity = intent.getStringExtra(NetworkBroadcastReceiver.EVENT_ACTIVITY);
+                int eventId = intent.getIntExtra(HttpBroadcastReceiver.EVENT_ID, -1);
+                String activity = intent.getStringExtra(HttpBroadcastReceiver.EVENT_ACTIVITY);
                 Class<Activity> clazz = (Class<Activity>) Class.forName(activity);
                 try {
                     retrofit2.Response<OAuth2AuthorizeResponse> response = responseCall.execute();
@@ -80,25 +80,29 @@ public class MBaaSIntentService extends IntentService {
                         try {
                             retrofit2.Response res = REVOKED.get(eventId).execute();
                             Intent intentActivity = new Intent(this, clazz);
-                            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_RESPONSE);
-                            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_ID, eventId);
-                            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_JSON, new Gson().toJson(res.body()));
+                            intentActivity.putExtra(HttpBroadcastReceiver.EVENT, HttpBroadcastReceiver.EVENT_RESPONSE);
+                            intentActivity.putExtra(HttpBroadcastReceiver.EVENT_ID, eventId);
+                            intentActivity.putExtra(HttpBroadcastReceiver.EVENT_JSON, new Gson().toJson(res.body()));
                             intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intentActivity);
                         } catch (IOException e) {
                             Intent intentActivity = new Intent(this, clazz);
-                            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_FAILURE);
-                            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_ID, eventId);
-                            intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_MESSAGE, e.getMessage());
+                            intentActivity.putExtra(HttpBroadcastReceiver.EVENT, HttpBroadcastReceiver.EVENT_FAILURE);
+                            intentActivity.putExtra(HttpBroadcastReceiver.EVENT_ID, eventId);
+                            intentActivity.putExtra(HttpBroadcastReceiver.EVENT_MESSAGE, e.getMessage());
                             intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intentActivity);
                         }
+                    } else {
+                        Intent intentActivity = new Intent(this, clazz);
+                        intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intentActivity);
                     }
                 } catch (IOException e) {
                     Intent intentActivity = new Intent(this, clazz);
-                    intentActivity.putExtra(NetworkBroadcastReceiver.EVENT, NetworkBroadcastReceiver.EVENT_UNAUTHORIZED);
-                    intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_ID, eventId);
-                    intentActivity.putExtra(NetworkBroadcastReceiver.EVENT_MESSAGE, e.getMessage());
+                    intentActivity.putExtra(HttpBroadcastReceiver.EVENT, HttpBroadcastReceiver.EVENT_UNAUTHORIZED);
+                    intentActivity.putExtra(HttpBroadcastReceiver.EVENT_ID, eventId);
+                    intentActivity.putExtra(HttpBroadcastReceiver.EVENT_MESSAGE, e.getMessage());
                     intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intentActivity);
                 }

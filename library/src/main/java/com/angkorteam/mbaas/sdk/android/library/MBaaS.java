@@ -1,6 +1,8 @@
 package com.angkorteam.mbaas.sdk.android.library;
 
+import android.app.Activity;
 import android.app.Application;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.Build;
@@ -100,6 +102,24 @@ public class MBaaS {
 
     public final MBaaSClient getClient() {
         return this.mbaasClient;
+    }
+
+    public final Application getApplication() {
+        return this.application;
+    }
+
+    public final void promptLogin(Class<? extends Activity> activityClass) {
+        Intent intentActivity = new Intent(this.application, LoginActivity.class);
+        intentActivity.putExtra(HttpBroadcastReceiver.EVENT_ACTIVITY, activityClass.getName());
+        intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        this.application.startActivity(intentActivity);
+    }
+
+    public final void promptLogin(Activity activity) {
+        Intent intentActivity = new Intent(this.application, LoginActivity.class);
+        intentActivity.putExtra(HttpBroadcastReceiver.EVENT_ACTIVITY, activity.getClass().getName());
+        intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        this.application.startActivity(intentActivity);
     }
 
     public final XMLPropertiesConfiguration getConfiguration() {
