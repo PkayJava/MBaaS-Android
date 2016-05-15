@@ -1,6 +1,7 @@
 package com.angkorteam.mbaas.sdk.android.library;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.graphics.PorterDuff;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -64,11 +65,11 @@ public abstract class MBaaSAdapter<T extends RecyclerView.ViewHolder> extends Re
         }
     };
 
-    public MBaaSAdapter(Activity activity, int resourceId, HttpBroadcastReceiver broadcastReceiver, String javascript, RecyclerView recyclerView) {
+    public MBaaSAdapter(Activity activity, int resourceId, String javascript, RecyclerView recyclerView) {
+        this.broadcastReceiver = new HttpBroadcastReceiver(this);
         this.activity = activity;
         this.resourceId = resourceId;
         this.javascript = javascript;
-        this.broadcastReceiver = broadcastReceiver;
         this.broadcastReceiver.setNetworkReceiver(this);
         this.recyclerView = recyclerView;
         this.items = new LinkedHashMap<>();
@@ -214,6 +215,11 @@ public abstract class MBaaSAdapter<T extends RecyclerView.ViewHolder> extends Re
     @Override
     public void onUnauthorized(int operationId) {
 
+    }
+
+    @Override
+    public final HttpBroadcastReceiver getHttpBroadcastReceiver() {
+        return this.broadcastReceiver;
     }
 
     private static final class ProgressViewHolder extends RecyclerView.ViewHolder {

@@ -1,5 +1,6 @@
 package com.angkorteam.mbaas.sdk.android.example;
 
+import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
@@ -19,7 +20,7 @@ import com.google.android.gms.common.GoogleApiAvailability;
 
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements HttpBroadcastReceiver.HttpReceiver, SocketBroadcastReceiver.SocketReceiver {
+public class MainActivity extends AppCompatActivity implements HttpBroadcastReceiver.HttpReceiver {
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     public static final String TAG = "MBaaS";
@@ -27,8 +28,7 @@ public class MainActivity extends AppCompatActivity implements HttpBroadcastRece
     private RecyclerView recyclerView;
     private LinearLayoutManager linearLayoutManager;
 
-    private HttpBroadcastReceiver broadcastReceiver = null;
-    private HttpBroadcastReceiver mbaasAdapterBroadcastReceiver = null;
+    private HttpBroadcastReceiver httpBroadcastReceiver = null;
 
     private MBaaSAdapter<DataViewHolder> mbaasAdapter = null;
 
@@ -38,11 +38,8 @@ public class MainActivity extends AppCompatActivity implements HttpBroadcastRece
 
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
 
-        broadcastReceiver = new HttpBroadcastReceiver(this);
-        manager.registerReceiver(broadcastReceiver, new IntentFilter(broadcastReceiver.getUuid()));
-
-        mbaasAdapterBroadcastReceiver = new HttpBroadcastReceiver();
-        manager.registerReceiver(mbaasAdapterBroadcastReceiver, new IntentFilter(mbaasAdapterBroadcastReceiver.getUuid()));
+        this.httpBroadcastReceiver = new HttpBroadcastReceiver(this);
+        manager.registerReceiver(this.httpBroadcastReceiver, new IntentFilter(this.httpBroadcastReceiver.getUuid()));
 
         setContentView(R.layout.activity_main);
 
@@ -59,12 +56,9 @@ public class MainActivity extends AppCompatActivity implements HttpBroadcastRece
 
         }
 
-        MBaaS mbaas = MBaaS.getInstance();
-        mbaas.getClient().registerReceiver(this, this);
+        // client.securityLogin("admin", "admin").enqueue(new MBaaSCallback<SecurityLoginResponse>(1002, this, httpBroadcastReceiver));
 
-        // client.securityLogin("admin", "admin").enqueue(new MBaaSCallback<SecurityLoginResponse>(1002, this, broadcastReceiver));
-
-        mbaasAdapter = new MBaaSAdapter<DataViewHolder>(this, R.layout.data_row, this.mbaasAdapterBroadcastReceiver, "khmer_now", recyclerView) {
+        this.mbaasAdapter = new MBaaSAdapter<DataViewHolder>(this, R.layout.data_row, "khmer_now", recyclerView) {
             @Override
             protected void onPopulateItem(DataViewHolder holder, int position, Map<String, Object> item) {
                 String title = (String) item.get("headline");
@@ -77,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements HttpBroadcastRece
                 return new DataViewHolder(view);
             }
         };
+        manager.registerReceiver(this.mbaasAdapter.getHttpBroadcastReceiver(), new IntentFilter(this.mbaasAdapter.getHttpBroadcastReceiver().getUuid()));
     }
 
     @Override
@@ -93,8 +88,8 @@ public class MainActivity extends AppCompatActivity implements HttpBroadcastRece
     @Override
     protected void onDestroy() {
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
-        manager.unregisterReceiver(broadcastReceiver);
-        manager.unregisterReceiver(mbaasAdapterBroadcastReceiver);
+        manager.unregisterReceiver(this.httpBroadcastReceiver);
+        manager.unregisterReceiver(this.mbaasAdapter.getHttpBroadcastReceiver());
         super.onDestroy();
     }
 
@@ -157,8 +152,8 @@ public class MainActivity extends AppCompatActivity implements HttpBroadcastRece
     }
 
     @Override
-    public void onMessage(String fromUserId, String message) {
-        Log.i("MBaaS", fromUserId + " " + message);
+    public BroadcastReceiver getHttpBroadcastReceiver() {
+        return this.httpBroadcastReceiver;
     }
 
     @Override

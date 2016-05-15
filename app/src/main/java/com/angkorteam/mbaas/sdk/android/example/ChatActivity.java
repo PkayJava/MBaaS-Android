@@ -1,24 +1,27 @@
 package com.angkorteam.mbaas.sdk.android.example;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.angkorteam.mbaas.sdk.android.library.SocketBroadcastReceiver;
 import com.angkorteam.mbaas.sdk.android.library.MBaaS;
-import com.angkorteam.mbaas.sdk.android.library.MBaaSClient;
+import com.angkorteam.mbaas.sdk.android.library.SocketBroadcastReceiver;
 
 public class ChatActivity extends AppCompatActivity implements SocketBroadcastReceiver.SocketReceiver {
 
     private EditText editText;
 
+    private SocketBroadcastReceiver socketBroadcastReceiver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        this.socketBroadcastReceiver = new SocketBroadcastReceiver(this);
 
         this.editText = (EditText) findViewById(R.id.editText);
 
@@ -66,7 +69,13 @@ public class ChatActivity extends AppCompatActivity implements SocketBroadcastRe
     }
 
     @Override
-    public void onMessage(String userId, String message) {
+    public void onMessage(String uuid, String userId, String message) {
         Log.i("MBaaS", userId + " " + message);
     }
+
+    @Override
+    public SocketBroadcastReceiver getSocketBroadcastReceiver() {
+        return this.socketBroadcastReceiver;
+    }
+
 }

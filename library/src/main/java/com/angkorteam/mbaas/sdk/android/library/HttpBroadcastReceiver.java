@@ -3,15 +3,14 @@ package com.angkorteam.mbaas.sdk.android.library;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 
 import java.util.UUID;
 
 /**
  * Created by socheat on 4/15/16.
  */
-public class HttpBroadcastReceiver extends BroadcastReceiver {
-
-    private final String uuid;
+public final class HttpBroadcastReceiver extends BroadcastReceiver {
 
     public static final String EVENT = "event";
 
@@ -25,15 +24,15 @@ public class HttpBroadcastReceiver extends BroadcastReceiver {
     public static final String EVENT_MESSAGE = "event_message";
     public static final String EVENT_ACTIVITY = "event_activity";
 
+    private final IntentFilter intentFilter;
+    private final String uuid;
+
     private HttpReceiver receiver;
 
-    public HttpBroadcastReceiver(HttpReceiver httpReceiver) {
+    public HttpBroadcastReceiver(HttpReceiver receiver) {
+        this.receiver = receiver;
         this.uuid = UUID.randomUUID().toString();
-        this.receiver = httpReceiver;
-    }
-
-    public HttpBroadcastReceiver() {
-        this.uuid = UUID.randomUUID().toString();
+        this.intentFilter = new IntentFilter(this.uuid);
     }
 
     public void setNetworkReceiver(HttpReceiver httpReceiver) {
@@ -63,11 +62,17 @@ public class HttpBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
+    public IntentFilter getIntentFilter() {
+        return this.intentFilter;
+    }
+
     public String getUuid() {
-        return uuid;
+        return this.uuid;
     }
 
     public interface HttpReceiver {
+
+        BroadcastReceiver getHttpBroadcastReceiver();
 
         void onResponse(int operationId, String json);
 

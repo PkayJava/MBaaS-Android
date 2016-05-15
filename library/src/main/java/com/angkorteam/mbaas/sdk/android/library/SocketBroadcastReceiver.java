@@ -9,6 +9,7 @@ import android.content.Intent;
  */
 public class SocketBroadcastReceiver extends BroadcastReceiver {
 
+    public static final String UUID = "uuid";
     public static final String USER_ID = "userId";
     public static final String MESSAGE = "message";
 
@@ -21,9 +22,10 @@ public class SocketBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (this.receiver != null) {
-            String fromUserId = intent.getStringExtra(USER_ID);
+            String uuid = intent.getStringExtra(UUID);
+            String userId = intent.getStringExtra(USER_ID);
             String message = intent.getStringExtra(MESSAGE);
-            this.receiver.onMessage(fromUserId, message);
+            this.receiver.onMessage(uuid, userId, message);
         }
     }
 
@@ -32,7 +34,9 @@ public class SocketBroadcastReceiver extends BroadcastReceiver {
      */
     public interface SocketReceiver {
 
-        void onMessage(String userId, String message);
+        SocketBroadcastReceiver getSocketBroadcastReceiver();
+
+        void onMessage(String uuid, String userId, String message);
 
     }
 }

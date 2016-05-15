@@ -87,10 +87,10 @@ public class ClientHandler extends SimpleChannelInboundHandler<String> {
         if (COMMAND_MESSAGE_NOTIFICATION.equals(command)) {
             MessageNotification messageNotification = this.gson.fromJson(json, MessageNotification.class);
             Intent intent = new Intent(SocketBroadcastReceiver.class.getName());
+            intent.putExtra(SocketBroadcastReceiver.UUID, messageNotification.getUuid());
             intent.putExtra(SocketBroadcastReceiver.USER_ID, messageNotification.getUserId());
             intent.putExtra(SocketBroadcastReceiver.MESSAGE, messageNotification.getMessage());
             manager.sendBroadcast(intent);
         }
-        Log.i("MBaaS", msg);
     }
 }
