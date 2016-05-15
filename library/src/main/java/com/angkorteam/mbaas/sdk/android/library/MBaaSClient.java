@@ -104,7 +104,7 @@ public final class MBaaSClient {
                 }
             }
         });
-        if (!"".equals(sharedPreferences.getString(MBaaSIntentService.ACCESS_TOKEN, ""))) {
+        if (sharedPreferences.getBoolean(MBaaSIntentService.AUTHENTICATED, false) && !"".equals(sharedPreferences.getString(MBaaSIntentService.ACCESS_TOKEN, ""))) {
             Task.callInBackground(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
